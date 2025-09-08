@@ -18,13 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
-# from . import views
+from . import views
 from django.contrib.auth.urls import views as auth_views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('core/', include('core.urls')),
-    path("accounts/", include("django.contrib.auth.urls")),
+    path('index/', views.index, name='index' ),
+    path('register/', views.register, name="register"),
+    # Added home route pointing to index view
+    path('home/', views.home_page, name='home'),
 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+]

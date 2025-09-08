@@ -1,0 +1,51 @@
+<!-- templates/landing.html -->
+{% extends "layout.html" %}
+
+{% block title %}Welcome | Carbon Tracker{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Measure. Reduce. Thrive.</h1>
+        <p>Track your carbon footprint, join eco-challenges, and make a real difference for our planet's future.</p>
+        <a href="#" class="btn large">Calculate My Footprint</a>
+    </div>
+</section>
+
+<section class="features container">
+    <h2>Features</h2>
+    <div class="feature-grid">
+        <div class="card">
+            <h3>🌱 Daily Activity Tracker</h3>
+            <p>Effortlessly log your transport, food choices, and energy consumption with our intuitive interface.</p>
+        </div>
+        <div class="card">
+            <h3>🎯 Eco Challenges</h3>
+            <p>Join community events like "No Car Week" and collaborate to reduce emissions together.</p>
+        </div>
+        <div class="card">
+            <h3>🏆 Leaderboard & Rewards</h3>
+            <p>Earn achievement badges and compete with friends on your sustainability journey.</p>
+        </div>
+    </div>
+</section>
+
+<section class="leaderboard container">
+    <h2>Leaderboard Preview</h2>
+    <div class="leaderboard-preview">
+        <div class="user">
+            <span>🏆</span>
+            <p><strong>Alice</strong><br />120 kg CO₂</p>
+        </div>
+        <div class="user">
+            <span>🥈</span>
+            <p><strong>Raj</strong><br />135 kg CO₂</p>
+        </div>
+        <div class="user">
+            <span>🥉</span>
+            <p><strong>Sofia</strong><br />140 kg CO₂</p>
+        </div>
+    </div>
+    <a class="btn" href="#">View Full Leaderboard</a>
+</section>
+{% endblock %}

@@ -1,0 +1,124 @@
+
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}
+Sign up / X
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <!-- Register Form -->
+            <div class="d-flex flex-column justify-content-center min-vh-100">
+                <div class="text-center mb-5">
+                    <i class="fab fa-twitter text-primary" style="font-size: 3rem;"></i>
+                </div>
+                
+                <div class="bg-dark bg-opacity-50 rounded-3 p-4">
+                    <h2 class="text-white fw-bold mb-4 text-center">Join X today</h2>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label text-white">Username</label>
+                            <input type="text" 
+                                   class="form-control bg-transparent border-secondary text-white" 
+                                   name="{{ form.username.name }}" 
+                                   id="{{ form.username.id_for_label }}"
+                                   placeholder="Choose a username"
+                                   required>
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label text-white">Email</label>
+                            <input type="email" 
+                                   class="form-control bg-transparent border-secondary text-white" 
+                                   name="{{ form.email.name }}" 
+                                   id="{{ form.email.id_for_label }}"
+                                   placeholder="Enter your email"
+                                   required>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label text-white">Password</label>
+                            <input type="password" 
+                                   class="form-control bg-transparent border-secondary text-white" 
+                                   name="{{ form.password1.name }}" 
+                                   id="{{ form.password1.id_for_label }}"
+                                   placeholder="Create a password"
+                                   required>
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label text-white">Confirm Password</label>
+                            <input type="password" 
+                                   class="form-control bg-transparent border-secondary text-white" 
+                                   name="{{ form.password2.name }}" 
+                                   id="{{ form.password2.id_for_label }}"
+                                   placeholder="Confirm your password"
+                                   required>
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold mb-3">
+                            Sign up
+                        </button>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p class="text-muted mb-0">Already have an account? 
+                            <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-bold">Log in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control:focus {
+    border-color: #1d9bf0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(29, 155, 240, 0.25) !important;
+    background-color: transparent !important;
+}
+
+.form-control::placeholder {
+    color: #71767b;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+</style>
+{% endblock %}
