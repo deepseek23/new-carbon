@@ -1,0 +1,929 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block title %}Carbon Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <div class="welcome-section">
+            <h1 class="dashboard-title">🌍 Your Carbon Footprint Dashboard</h1>
+            <p class="dashboard-subtitle">Track your environmental impact and make a difference</p>
+        </div>
+        <div class="last-updated">
+            <span class="update-badge">Last updated: {{ latest.created_at|date:"M d, Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Time Period Selector -->
+    <div class="period-selector">
+        <div class="period-tabs">
+            <a href="?period=daily" class="period-tab {% if time_period == 'daily' %}active{% endif %}">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Daily</span>
+            </a>
+            <a href="?period=weekly" class="period-tab {% if time_period == 'weekly' %}active{% endif %}">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Weekly</span>
+            </a>
+            <a href="?period=monthly" class="period-tab {% if time_period == 'monthly' %}active{% endif %}">
+                <span class="tab-icon">📈</span>
+                <span class="tab-label">Monthly</span>
+            </a>
+            <a href="?period=all" class="period-tab {% if time_period == 'all' %}active{% endif %}">
+                <span class="tab-icon">🕒</span>
+                <span class="tab-label">All Time</span>
+            </a>
+        </div>
+        <div class="period-info">
+            <span class="period-label">{{ period_label }}</span>
+            <span class="entries-count">{{ total_entries }} entries</span>
+        </div>
+    </div>
+
+    {% if latest %}
+    <!-- Summary Overview -->
+    <div class="summary-section">
+        <div class="summary-card main-card">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+                <h3>{{ period_label }} Carbon Footprint</h3>
+                <div class="main-value">{{ breakdown.total|floatformat:1 }} kg CO₂</div>
+                <div class="card-subtitle">
+                    {% if time_period == 'daily' %}
+                        Today's total emissions
+                    {% elif time_period == 'weekly' %}
+                        This week's total emissions
+                    {% elif time_period == 'monthly' %}
+                        This month's total emissions
+                    {% else %}
+                        All-time total emissions
+                    {% endif %}
+                </div>
+                {% if time_period != 'daily' %}
+                <div class="avg-daily">
+                    <span class="avg-label">Average Daily:</span>
+                    <span class="avg-value">{{ avg_daily|floatformat:1 }} kg CO₂</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-trend">
+                {% if all_footprints|length > 1 %}
+                    {% with prev=all_footprints.1.total_emission %}
+                        {% if prev > breakdown.total %}
+                            <span class="trend-down">📉 -{{ prev|add:"-"|add:breakdown.total|floatformat:1 }} kg</span>
+                        {% elif prev < breakdown.total %}
+                            <span class="trend-up">📈 +{{ breakdown.total|add:"-"|add:prev|floatformat:1 }} kg</span>
+                        {% else %}
+                            <span class="trend-neutral">➡️ No change</span>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="categories-section">
+        <h2 class="section-title">Emission Categories - {{ period_label }}</h2>
+        <div class="categories-grid">
+            <div class="category-card transportation">
+                <div class="category-icon">🚗</div>
+                <div class="category-content">
+                    <h4>Transportation</h4>
+                    <div class="category-value">{{ breakdown.transportation|floatformat:1 }} kg</div>
+                    <div class="category-percentage">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.transportation breakdown.total 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="category-bar">
+                    <div class="bar-fill" style="width: {% if breakdown.total > 0 %}{% widthratio breakdown.transportation breakdown.total 100 %}{% else %}0{% endif %}%"></div>
+                </div>
+            </div>
+
+            <div class="category-card electricity">
+                <div class="category-icon">⚡</div>
+                <div class="category-content">
+                    <h4>Electricity</h4>
+                    <div class="category-value">{{ breakdown.electricity|floatformat:1 }} kg</div>
+                    <div class="category-percentage">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.electricity breakdown.total 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="category-bar">
+                    <div class="bar-fill" style="width: {% if breakdown.total > 0 %}{% widthratio breakdown.electricity breakdown.total 100 %}{% else %}0{% endif %}%"></div>
+                </div>
+            </div>
+
+            <div class="category-card food">
+                <div class="category-icon">🍽️</div>
+                <div class="category-content">
+                    <h4>Food</h4>
+                    <div class="category-value">{{ breakdown.food|floatformat:1 }} kg</div>
+                    <div class="category-percentage">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.food breakdown.total 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="category-bar">
+                    <div class="bar-fill" style="width: {% if breakdown.total > 0 %}{% widthratio breakdown.food breakdown.total 100 %}{% else %}0{% endif %}%"></div>
+                </div>
+            </div>
+
+            <div class="category-card waste">
+                <div class="category-icon">♻️</div>
+                <div class="category-content">
+                    <h4>Waste</h4>
+                    <div class="category-value">{{ breakdown.waste|floatformat:1 }} kg</div>
+                    <div class="category-percentage">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.waste breakdown.total 100 %}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="category-bar">
+                    <div class="bar-fill" style="width: {% if breakdown.total > 0 %}{% widthratio breakdown.waste breakdown.total 100 %}{% else %}0{% endif %}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Emission Breakdown - {{ period_label }}</h3>
+                <p>Visual distribution of your carbon footprint</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="breakdownChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Emission History</h3>
+                <p>Track your progress over time</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="historyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights Section -->
+    <div class="insights-section">
+        <h2 class="section-title">Environmental Impact Insights - {{ period_label }}</h2>
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-icon">🌳</div>
+                <div class="insight-content">
+                    <h4>Trees Needed</h4>
+                    <div class="insight-value">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.total 22 1 %}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <p>Trees to offset your {{ period_label|lower }} emissions</p>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🚗</div>
+                <div class="insight-content">
+                    <h4>Car Miles</h4>
+                    <div class="insight-value">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.total 0.4 1 %}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <p>Equivalent car miles driven</p>
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">🏠</div>
+                <div class="insight-content">
+                    <h4>Home Days</h4>
+                    <div class="insight-value">
+                        {% if breakdown.total > 0 %}
+                            {% widthratio breakdown.total 16 1 %}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                    <p>Days of average home electricity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-section">
+        <div class="action-card">
+            <div class="action-content">
+                <h3>Ready to reduce your footprint?</h3>
+                <p>Start tracking your daily activities and see how small changes can make a big difference.</p>
+                <a href="{% url 'home' %}" class="action-btn">Add New Entry</a>
+            </div>
+            <div class="action-icon">🌱</div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h2>No Data Yet</h2>
+        <p>Start tracking your carbon footprint to see your personalized dashboard.</p>
+        <a href="{% url 'home' %}" class="cta-button">Start Tracking</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if latest %}
+    // Enhanced Pie chart for breakdown
+    const ctx1 = document.getElementById('breakdownChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Transportation', 'Food', 'Electricity', 'Waste'],
+            datasets: [{
+                data: [{{ breakdown.transportation|floatformat:1 }}, {{ breakdown.food|floatformat:1 }}, {{ breakdown.electricity|floatformat:1 }}, {{ breakdown.waste|floatformat:1 }}],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(168, 85, 247, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(34, 197, 94, 1)',
+                    'rgba(59, 130, 246, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(168, 85, 247, 1)'
+                ],
+                borderWidth: 2,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 14,
+                            family: 'Inter'
+                        },
+                        color: '#ffffff'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#22c55e',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            }
+        }
+    });
+
+    // Enhanced Line chart for emission history
+    const ctx2 = document.getElementById('historyChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: [{% for f in footprints reversed %}'{{ f.created_at.date }}',{% endfor %}],
+            datasets: [{
+                label: 'Total CO₂ Emission (kg)',
+                data: [{% for f in footprints reversed %}{{ f.total_emission|floatformat:1 }},{% endfor %}],
+                borderColor: 'rgba(34, 197, 94, 1)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            size: 14,
+                            family: 'Inter'
+                        },
+                        color: '#ffffff'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#22c55e',
+                    borderWidth: 1,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a3a3a3',
+                        font: {
+                            family: 'Inter'
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a3a3a3',
+                        font: {
+                            family: 'Inter'
+                        }
+                    }
+                }
+            }
+        }
+    });
+{% endif %}
+</script>
+
+<style>
+/* Dashboard Specific Styles */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, #ffffff, #22c55e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.update-badge {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--accent-green);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Period Selector Styles */
+.period-selector {
+    margin-bottom: 3rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.period-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.period-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.period-tab:hover {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: var(--accent-green);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.period-tab.active {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    border-color: var(--accent-green);
+    color: white;
+}
+
+.tab-icon {
+    font-size: 1.2rem;
+}
+
+.tab-label {
+    font-size: 0.9rem;
+}
+
+.period-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.period-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.entries-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+}
+
+.summary-section {
+    margin-bottom: 3rem;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, var(--bg-card), rgba(34, 197, 94, 0.05));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-green), #10b981);
+}
+
+.card-icon {
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+.card-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.main-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin: 0.5rem 0;
+}
+
+.card-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.avg-daily {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avg-label {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.avg-value {
+    color: var(--accent-green);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.card-trend {
+    margin-left: auto;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.trend-down { color: #10b981; }
+.trend-up { color: #ef4444; }
+.trend-neutral { color: var(--text-secondary); }
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.categories-section {
+    margin-bottom: 3rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-green);
+}
+
+.category-card.transportation { border-left: 4px solid #22c55e; }
+.category-card.electricity { border-left: 4px solid #3b82f6; }
+.category-card.food { border-left: 4px solid #f59e0b; }
+.category-card.waste { border-left: 4px solid #a855f7; }
+
+.category-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.category-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.category-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-bottom: 0.5rem;
+}
+
+.category-percentage {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.category-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-green), #10b981);
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.charts-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.chart-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.chart-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.chart-header p {
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+.chart-wrapper {
+    height: 300px;
+    position: relative;
+}
+
+.insights-section {
+    margin-bottom: 3rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.insight-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-green);
+}
+
+.insight-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.insight-content h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.insight-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-bottom: 0.5rem;
+}
+
+.insight-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.action-section {
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: linear-gradient(135deg, var(--bg-card), rgba(34, 197, 94, 0.05));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    padding: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.action-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.action-content p {
+    color: var(--text-secondary);
+    margin: 0 0 2rem 0;
+    font-size: 1rem;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+    color: white;
+}
+
+.action-icon {
+    font-size: 4rem;
+    opacity: 0.8;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    opacity: 0.6;
+}
+
+.empty-state h2 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin: 0 0 2rem 0;
+    font-size: 1.1rem;
+}
+
+.cta-button {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    color: white;
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .period-tabs {
+        justify-content: center;
+    }
+    
+    .period-tab {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .main-value {
+        font-size: 2.5rem;
+    }
+    
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+    }
+    
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    
+    .summary-card {
+        padding: 1.5rem;
+    }
+    
+    .main-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        padding: 1rem;
+    }
+    
+    .chart-wrapper {
+        height: 250px;
+    }
+    
+    .period-tab {
+        padding: 0.5rem 1rem;
+    }
+    
+    .tab-label {
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}

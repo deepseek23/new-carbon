@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.utils import timezone
+from datetime import datetime, timedelta
 from .forms import UserRegistrationForm, CarbonFootprintForm
+from .models import CarbonFootprint
 
 def index(request):
     return render(request, 'index.html')
@@ -208,3 +211,75 @@ def generate_predefined_tips(emission_breakdown, footprint):
         "tips": tips[:5],  # Limit to top 5 tips
         "motivation": "Every small change makes a difference! You're taking an important step towards a more sustainable future."
     }
+
+@login_required
+def dashboard(request):
+    # Get time period from request (default to 'monthly')
+    time_period = request.GET.get('period', 'monthly')
+    
+    # Get all footprints for the user
+    all_footprints = CarbonFootprint.objects.filter(user=request.user).order_by("-created_at")
+    
+    # Filter footprints based on time period
+    now = timezone.now()
+    if time_period == 'daily':
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        footprints = all_footprints.filter(created_at__gte=start_date)
+        period_label = "Today"
+    elif time_period == 'weekly':
+        start_date = now - timedelta(days=7)
+        footprints = all_footprints.filter(created_at__gte=start_date)
+        period_label = "This Week"
+    elif time_period == 'monthly':
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        footprints = all_footprints.filter(created_at__gte=start_date)
+        period_label = "This Month"
+    else:
+        footprints = all_footprints
+        period_label = "All Time"
+    
+    # Calculate aggregated data for the selected period
+    if footprints.exists():
+        # Calculate total emissions for the period
+        total_emissions = sum(footprint.total_emission for footprint in footprints)
+        
+        # Calculate breakdown for the period
+        breakdown = {
+            'total': total_emissions,
+            'transportation': sum(footprint.get_emission_breakdown()['transportation'] for footprint in footprints),
+            'electricity': sum(footprint.get_emission_breakdown()['electricity'] for footprint in footprints),
+            'food': sum(footprint.get_emission_breakdown()['food'] for footprint in footprints),
+            'waste': sum(footprint.get_emission_breakdown()['waste'] for footprint in footprints),
+        }
+        
+        # Get the latest footprint for display
+        latest = footprints.first()
+        
+        # Calculate average daily emissions for the period
+        if time_period == 'daily':
+            avg_daily = total_emissions
+        elif time_period == 'weekly':
+            avg_daily = total_emissions / 7
+        elif time_period == 'monthly':
+            avg_daily = total_emissions / 30
+        else:
+            avg_daily = total_emissions / max(len(footprints), 1)
+    else:
+        latest = None
+        breakdown = {}
+        avg_daily = 0
+    
+    # Prepare chart data
+    chart_footprints = footprints[:10]  # Limit to last 10 entries for chart
+    
+    context = {
+        "latest": latest,
+        "breakdown": breakdown,
+        "footprints": chart_footprints,
+        "all_footprints": all_footprints,
+        "time_period": time_period,
+        "period_label": period_label,
+        "avg_daily": avg_daily,
+        "total_entries": footprints.count(),
+    }
+    return render(request, "dashboard.html", context)
