@@ -1,6 +1,980 @@
 {% extends "layout.html" %}
-{% block title %}home page{% endblock %}
+
+{% block title %}Home Page{% endblock %}
 
 {% block content %}
-<h1>hello this the home page</h1>
-{% endblock %}
+<div class="container py-4">
+    <div class="calculator-section">
+        <h1 class="mb-4 text-center">🌱 Carbon Footprint Calculator</h1>
+        <p class="text-center mb-5 text-secondary">Calculate your environmental impact and take steps towards a greener future</p>
+
+        <!-- Input Form -->
+        <div class="form-container">
+            <form method="post" class="carbon-form" id="carbonForm">
+                {% csrf_token %}
+                
+                <!-- Transportation Section -->
+                <div class="form-section">
+                    <h3 class="section-title">🚗 Transportation</h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.car_travel_km.id_for_label }}" class="form-label">
+                            Car Travel Distance (km/month)
+                        </label>
+                        {{ form.car_travel_km }}
+                        <small class="form-help">Enter the distance you travel by car per month</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.fuel_type.id_for_label }}" class="form-label">
+                            ⛽ Fuel Type
+                        </label>
+                        {{ form.fuel_type }}
+                        <small class="form-help">Select the type of fuel your car uses</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.flights_hours.id_for_label }}" class="form-label">
+                            ✈️ Flight Hours (monthly)
+                        </label>
+                        {{ form.flights_hours }}
+                        <small class="form-help">Enter total flight hours per month</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.public_transport_km.id_for_label }}" class="form-label">
+                            🚌 Public Transport Distance (km/month)
+                        </label>
+                        {{ form.public_transport_km }}
+                        <small class="form-help">Enter distance traveled by bus, train, or metro per month</small>
+                    </div>
+                </div>
+
+                <!-- Food Section -->
+                <div class="form-section">
+                    <h3 class="section-title">🍽️ Food Consumption</h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.meals_per_day.id_for_label }}" class="form-label">
+                            🍴 Meals per Day
+                        </label>
+                        {{ form.meals_per_day }}
+                        <small class="form-help">Number of meals you eat per day</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.meal_type.id_for_label }}" class="form-label">
+                            🥩 Meal Type
+                        </label>
+                        {{ form.meal_type }}
+                        <small class="form-help">Select your typical meal composition</small>
+                    </div>
+                </div>
+
+                <!-- Energy Section -->
+                <div class="form-section">
+                    <h3 class="section-title">⚡ Energy Usage</h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.electricity_kwh.id_for_label }}" class="form-label">
+                            🔌 Electricity Consumption (kWh/month)
+                        </label>
+                        {{ form.electricity_kwh }}
+                        <small class="form-help">Your monthly electricity bill consumption</small>
+                    </div>
+                </div>
+
+                <!-- Waste Section -->
+                <div class="form-section">
+                    <h3 class="section-title">🗑️ Waste Management</h3>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.waste_kg.id_for_label }}" class="form-label">
+                            🗑️ Waste Generation (kg/month)
+                        </label>
+                        {{ form.waste_kg }}
+                        <small class="form-help">Amount of waste you generate per month</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.waste_type.id_for_label }}" class="form-label">
+                            ♻️ Waste Management Style
+                        </label>
+                        {{ form.waste_type }}
+                        <small class="form-help">How well do you recycle and manage waste?</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-calculate">
+                        <span class="btn-icon">📊</span>
+                        Calculate Carbon Footprint
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-reset" onclick="resetForm()">
+                        <span class="btn-icon">🔄</span>
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Enhanced Analysis Card -->
+        <div class="analysis-container" id="resultContainer" {% if not result %}style="display: none;"{% endif %}>
+            <div class="analysis-card">
+                <!-- Header Section -->
+                <div class="analysis-header">
+                    <div class="header-content">
+                        <h2 class="analysis-title">🌍 Carbon Footprint Analysis</h2>
+                        <p class="analysis-subtitle">Your environmental impact assessment</p>
+                    </div>
+                    <div class="header-icon">
+                        <div class="icon-circle">
+                            <span class="icon-emoji">📊</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Result Section -->
+                <div class="main-result">
+                    <div class="result-display">
+                        <div class="emission-circle">
+                            <div class="circle-content">
+                                <span class="emission-number">{{ result }}</span>
+                                <span class="emission-unit">kg CO₂</span>
+                                <span class="emission-period">per month</span>
+                            </div>
+                        </div>
+                        <div class="result-context">
+                            <div class="impact-level">
+                                {% if result < 100 %}
+                                    <span class="level-badge excellent">🌟 Excellent</span>
+                                    <p class="level-description">Your carbon footprint is quite low!</p>
+                                {% elif result < 150 %}
+                                    <span class="level-badge good">👍 Good</span>
+                                    <p class="level-description">You're doing well, but there's room for improvement.</p>
+                                {% elif result < 200 %}
+                                    <span class="level-badge moderate">⚠️ Moderate</span>
+                                    <p class="level-description">Above average impact. Consider some changes.</p>
+                                {% else %}
+                                    <span class="level-badge high">🚨 High</span>
+                                    <p class="level-description">Significant impact. Immediate action recommended.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emission Breakdown -->
+                {% if emission_breakdown %}
+                <div class="breakdown-section">
+                    <h3 class="section-heading">📊 Emission Breakdown</h3>
+                    <div class="breakdown-grid">
+                        <div class="breakdown-card transportation">
+                            <div class="card-icon">🚗</div>
+                            <div class="card-content">
+                                <h4>Transportation</h4>
+                                <div class="emission-value">{{ emission_breakdown.transportation }} kg</div>
+                                <div class="emission-percentage">{% widthratio emission_breakdown.transportation emission_breakdown.total 100 %}%</div>
+                            </div>
+                        </div>
+                        <div class="breakdown-card food">
+                            <div class="card-icon">🍽️</div>
+                            <div class="card-content">
+                                <h4>Food</h4>
+                                <div class="emission-value">{{ emission_breakdown.food }} kg</div>
+                                <div class="emission-percentage">{% widthratio emission_breakdown.food emission_breakdown.total 100 %}%</div>
+                            </div>
+                        </div>
+                        <div class="breakdown-card energy">
+                            <div class="card-icon">⚡</div>
+                            <div class="card-content">
+                                <h4>Electricity</h4>
+                                <div class="emission-value">{{ emission_breakdown.electricity }} kg</div>
+                                <div class="emission-percentage">{% widthratio emission_breakdown.electricity emission_breakdown.total 100 %}%</div>
+                            </div>
+                        </div>
+                        <div class="breakdown-card waste">
+                            <div class="card-icon">🗑️</div>
+                            <div class="card-content">
+                                <h4>Waste</h4>
+                                <div class="emission-value">{{ emission_breakdown.waste }} kg</div>
+                                <div class="emission-percentage">{% widthratio emission_breakdown.waste emission_breakdown.total 100 %}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Impact Summary -->
+                <div class="impact-summary">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-icon">📅</div>
+                            <div class="summary-content">
+                                <span class="summary-label">Monthly Impact</span>
+                                <span class="summary-value">{{ result }} kg CO₂</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-icon">📆</div>
+                            <div class="summary-content">
+                                <span class="summary-label">Annual Impact</span>
+                                <span class="summary-value">{% widthratio result 1 12 %} kg CO₂</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-icon">🌳</div>
+                            <div class="summary-content">
+                                <span class="summary-label">Trees to Offset</span>
+                                <span class="summary-value">{% widthratio result 22 1 %} trees</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personalized Tips -->
+                {% if tips %}
+                <div class="tips-section">
+                    <h3 class="section-heading">💡 Personalized Recommendations</h3>
+                    <div class="assessment-card">
+                        <div class="assessment-content">{{ tips.assessment }}</div>
+                    </div>
+                    
+                    <div class="tips-grid">
+                        {% for tip in tips.tips %}
+                        <div class="tip-card">
+                            <div class="tip-header">
+                                <div class="tip-icon">{{ tip.icon }}</div>
+                                <div class="tip-category">{{ tip.category }}</div>
+                            </div>
+                            <div class="tip-content">
+                                <p class="tip-text">{{ tip.tip }}</p>
+                                <div class="tip-savings">
+                                    <span class="savings-icon">💚</span>
+                                    <span class="savings-text">{{ tip.savings }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="motivation-card">
+                        <div class="motivation-content">{{ tips.motivation }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- General Tips -->
+                <div class="general-tips">
+                    <h3 class="section-heading">🌱 General Tips for Everyone</h3>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Use public transportation or carpool when possible</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Consider walking or cycling for short distances</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Choose fuel-efficient vehicles or electric cars</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Reduce unnecessary flights and choose direct routes</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Eat more plant-based meals and reduce meat consumption</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Use energy-efficient appliances and LED lighting</span>
+                        </div>
+                        <div class="tip-item">
+                            <span class="tip-bullet">✓</span>
+                            <span class="tip-text">Compost organic waste and recycle more</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function resetForm() {
+    // Reset all form fields to their default values
+    const form = document.getElementById('carbonForm');
+    form.reset();
+    
+    // Set default values explicitly for better control
+    const inputs = form.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+        input.value = '';
+    });
+    
+    // Reset select to first option
+    const selects = form.querySelectorAll('select');
+    selects.forEach(select => {
+        select.selectedIndex = 0;
+    });
+    
+    // Hide the result container
+    const resultContainer = document.getElementById('resultContainer');
+    if (resultContainer) {
+        resultContainer.style.display = 'none';
+    }
+    
+    // Add a visual feedback
+    const resetBtn = document.querySelector('.btn-reset');
+    const originalText = resetBtn.innerHTML;
+    resetBtn.innerHTML = '<span class="btn-icon">✅</span>Form Reset!';
+    resetBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+    
+    // Reset button appearance after 2 seconds
+    setTimeout(() => {
+        resetBtn.innerHTML = originalText;
+        resetBtn.style.background = 'linear-gradient(135deg, #6b7280, #4b5563)';
+    }, 2000);
+}
+
+// Add form change listener to show result container when form is submitted
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('carbonForm');
+    form.addEventListener('submit', function() {
+        // Show result container when form is submitted
+        const resultContainer = document.getElementById('resultContainer');
+        if (resultContainer) {
+            resultContainer.style.display = 'block';
+            // Add animation
+            resultContainer.style.opacity = '0';
+            resultContainer.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                resultContainer.style.transition = 'all 0.5s ease';
+                resultContainer.style.opacity = '1';
+                resultContainer.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    });
+});
+</script>
+
+<style>
+.calculator-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.carbon-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-section {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--bg-secondary);
+}
+
+.section-title {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-help {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.carbon-form input,
+.carbon-form select {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.carbon-form input:focus,
+.carbon-form select:focus {
+    outline: none;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-top: 0.8rem;
+}
+
+.btn-calculate {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    flex: 1;
+    max-width: 280px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+}
+
+.btn-reset {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    flex: 1;
+    max-width: 180px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+}
+
+.btn-icon {
+    margin-right: 0.4rem;
+}
+
+/* Enhanced Analysis Card Styles */
+.analysis-container {
+    margin-top: 2rem;
+    transition: all 0.5s ease;
+}
+
+.analysis-card {
+    background: linear-gradient(135deg, var(--bg-card), rgba(34, 197, 94, 0.02));
+    border: 1px solid var(--accent-green);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(34, 197, 94, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.analysis-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-green), #10b981, #059669);
+}
+
+/* Header Section */
+.analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.header-content {
+    flex: 1;
+}
+
+.analysis-title {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.analysis-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.header-icon {
+    margin-left: 1rem;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+}
+
+.icon-emoji {
+    font-size: 2rem;
+}
+
+/* Main Result Section */
+.main-result {
+    margin-bottom: 2.5rem;
+}
+
+.result-display {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.emission-circle {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(34, 197, 94, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 15px 35px rgba(34, 197, 94, 0.3); }
+    50% { box-shadow: 0 20px 45px rgba(34, 197, 94, 0.5); }
+    100% { box-shadow: 0 15px 35px rgba(34, 197, 94, 0.3); }
+}
+
+.circle-content {
+    text-align: center;
+    color: white;
+}
+
+.emission-number {
+    font-size: 3rem;
+    font-weight: 800;
+    display: block;
+    line-height: 1;
+}
+
+.emission-unit {
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: block;
+    margin-top: 0.2rem;
+}
+
+.emission-period {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    display: block;
+    margin-top: 0.1rem;
+}
+
+.result-context {
+    flex: 1;
+    max-width: 300px;
+}
+
+.impact-level {
+    text-align: center;
+}
+
+.level-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.level-badge.excellent {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+}
+
+.level-badge.good {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+}
+
+.level-badge.moderate {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.level-badge.high {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.level-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Breakdown Section */
+.breakdown-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-heading {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.breakdown-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.breakdown-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-card.transportation {
+    border-left: 4px solid #3b82f6;
+}
+
+.breakdown-card.food {
+    border-left: 4px solid #f59e0b;
+}
+
+.breakdown-card.energy {
+    border-left: 4px solid #ef4444;
+}
+
+.breakdown-card.waste {
+    border-left: 4px solid #8b5cf6;
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-content h4 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.emission-value {
+    color: var(--accent-green);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.emission-percentage {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Impact Summary */
+.impact-summary {
+    margin-bottom: 2.5rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.summary-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.summary-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-content {
+    flex: 1;
+}
+
+.summary-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.summary-value {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Tips Section */
+.tips-section {
+    margin-bottom: 2.5rem;
+}
+
+.assessment-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+    border: 1px solid var(--accent-green);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.assessment-content {
+    color: var(--accent-green);
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tip-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.tip-icon {
+    font-size: 1.5rem;
+    width: 35px;
+    height: 35px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tip-category {
+    background: var(--accent-green);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.tip-content {
+    margin-left: 0.5rem;
+}
+
+.tip-text {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0 0 0.8rem 0;
+}
+
+.tip-savings {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.savings-icon {
+    font-size: 0.9rem;
+}
+
+.savings-text {
+    color: var(--accent-green);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.motivation-card {
+    background: rgba(34, 197, 94, 0.05);
+    border: 1px solid var(--accent-green);
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+}
+
+.motivation-content {
+    color: var(--text-primary);
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+/* General Tips */
+.general-tips {
+    margin-bottom: 1rem;
+}
+
+.tips-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.8rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.tip-item:hover {
+    background: rgba(34, 197, 94, 0.05);
+    border-color: var(--accent-green);
+}
+
+.tip-bullet {
+    color: var(--accent-green);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.tip-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .calculator-section {
+        max-width: 95%;
+    }
+    
+    .form-container {
+        padding: 1.2rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-calculate,
+    .btn-reset {
+        max-width: none;
+    }
+    
+    .analysis-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .result-display {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .emission-circle {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .emission-number {
+        font-size: 2.5rem;
+    }
+    
+    .breakdown-grid,
+    .summary-grid,
+    .tips-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tips-list {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}  

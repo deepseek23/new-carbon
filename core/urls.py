@@ -25,8 +25,5 @@ from django.contrib.auth.urls import views as auth_views
 urlpatterns = [
     path('index/', views.index, name='index' ),
     path('register/', views.register, name="register"),
-    # Added home route pointing to index view
-    path('home/', views.home_page, name='home'),
-
-    
+    path('home/', views.home, name='home'),
 ]

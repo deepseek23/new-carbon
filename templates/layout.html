@@ -18,13 +18,13 @@
     <!-- Header -->
     <header>
         <div class="container nav">
-            <div class="logo">🌿 Carbon Tracker</div>
+            <div class="logo"><a href="{% url "index" %}" class="text-decoration-none text-success ">🌿 Carbon Tracker</a></div>
             <nav>
-                <a href="#">Home</a>
-                <a href="#">Track</a>
+                <a href="{% url "index" %}">Home</a>
+                <a href="{% url "home" %}">Track</a>
                 <a href="#">Challenges</a>
                 <a href="#">Leaderboard</a>
-                <a href="#">Learn</a>
+                <a href="#">Dashboard</a>
             </nav>
              {% if user.is_authenticated %}
           <form action="{% url "logout" %}" method="post">
