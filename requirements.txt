@@ -1,5 +1,16 @@
 asgiref==3.9.1
-Django==5.2.6
+beautifulsoup4==4.13.5
+certifi==2025.8.3
+charset-normalizer==3.4.3
+Django==4.2.24
+django-bootstrap-v5==1.0.11
+django-widget-tweaks==1.5.0
+idna==3.10
 pillow==11.3.0
+requests==2.32.5
+setuptools==65.5.0
+soupsieve==2.8
 sqlparse==0.5.3
+typing_extensions==4.15.0
 tzdata==2025.2
+urllib3==2.5.0
