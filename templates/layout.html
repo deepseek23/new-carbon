@@ -16,6 +16,8 @@
   {% bootstrap_css %}
   {% bootstrap_javascript %}
     <link rel="stylesheet" href="{% static 'layout.css' %}">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
 <body>
     <!-- Header -->
@@ -51,9 +53,44 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>🌱 Made with care for our planet</p>
-            <p>&copy; 2025 Carbon Tracker | <a href="#">Privacy</a> | <a href="#">Contact</a></p>
+            <p>&copy; 2023 Carbon Tracker. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        {% for message in messages %}
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="toast-header bg-{{ message.tags|default:'info' }} text-white">
+                <strong class="me-auto">
+                    {% if message.tags == 'error' %}
+                        Error
+                    {% elif message.tags == 'success' %}
+                        Success
+                    {% else %}
+                        Info
+                    {% endif %}
+                </strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Initialize Toasts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                });
+            });
+        });
+    </script>
 </body>
 </html>

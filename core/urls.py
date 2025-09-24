@@ -19,11 +19,12 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from . import views
-from django.contrib.auth.urls import views as auth_views
-
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
+from django.urls import re_path
 
 urlpatterns = [
-    path('index/', views.index, name='index' ),
+     path('', views.index, name='index' ),
     path('register/', views.register, name="register"),
     path('home/', views.home, name='home'),
     path("dashboard/", views.dashboard, name="dashboard"),
