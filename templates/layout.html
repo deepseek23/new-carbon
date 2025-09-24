@@ -23,13 +23,13 @@
     <!-- Header -->
     <header>
         <div class="container nav">
-            <div class="logo"><a href="{% url "index" %}" class="text-decoration-none text-success ">🌿 Carbon Tracker</a></div>
+            <div class="logo"><a href="{% url 'landing' %}" class="text-decoration-none text-success ">🌿 Carbon Tracker</a></div>
             <nav>
-                <a href="{% url "index" %}">Home</a>
-                <a href="{% url "home" %}">Track</a>
+                <a href="{% url 'landing' %}">Home</a>
+                <a href="{% url 'track' %}">Track</a>
                 <a href="#">Challenges</a>
                 <a href="#">Leaderboard</a>
-                <a href="{% url "dashboard" %}">Dashboard</a>
+                <a href="{% url 'dashboard' %}">Dashboard</a>
             </nav>
             <div class="d-flex gap-2">
             {% if user.is_authenticated %}

@@ -8,7 +8,7 @@ from .forms import UserRegistrationForm, CarbonFootprintForm
 from .models import CarbonFootprint
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'landing.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -43,7 +43,7 @@ def register(request):
 
 @login_required
 def home_page(request):
-    return render(request, 'home.html')
+    return render(request, 'track.html')
 
 @login_required
 def home(request):
@@ -65,7 +65,7 @@ def home(request):
     else:
         form = CarbonFootprintForm()
 
-    return render(request, "home.html", {
+    return render(request, "track.html", {
         "form": form,
         "result": result,
         "emission_breakdown": emission_breakdown,

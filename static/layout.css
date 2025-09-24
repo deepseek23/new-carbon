@@ -29,6 +29,8 @@ body {
     margin: auto;
 }
 
+
+
 /* Header */
 header {
     background: rgba(17, 17, 17, 0.95);
@@ -65,26 +67,14 @@ nav a {
     color: var(--text-secondary);
     transition: color 0.3s ease;
     position: relative;
+    text-decoration: none;
 }
 
 nav a:hover {
     color: var(--text-primary);
 }
 
-nav a::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent-green);
-    transition: width 0.3s ease;
-}
-
-nav a:hover::after {
-    width: 100%;
-}
+/* Removed underline effect */
 
 .btn {
     background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
