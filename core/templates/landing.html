@@ -1,51 +1,164 @@
-<!-- templates/landing.html -->
 {% extends "layout.html" %}
 
 {% block title %}Welcome | Carbon Tracker{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div class="hero-content">
-        <h1>Measure. Reduce. Thrive.</h1>
-        <p>Track your carbon footprint, join eco-challenges, and make a real difference for our planet's future.</p>
-        <a href="{% url "track" %}" class="btn large">Calculate My Footprint</a>
+<!-- CDN Scripts for required libraries -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="bg-black text-white">
+  <!-- Hero Section -->
+ <!-- Hero Section -->
+  <section class="relative h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+    <!-- Particle Background -->
+    <div id="particles-js" class="absolute inset-0"></div>
+    
+    <h1 class="text-6xl font-extrabold text-green-400 drop-shadow-lg z-10">
+      Track Your Carbon Footprint
+    </h1>
+    <p class="mt-6 text-xl text-gray-300 z-10 max-w-2xl">
+      Measure, analyze, and reduce your carbon impact in real-time with AI-powered insights.
+    </p>
+    <div class="mt-8 flex space-x-6 z-10"><a href="{% url "track" %}">
+      <button class="px-8 py-3 bg-green-500 text-black font-bold rounded-xl hover:shadow-[0_0_30px_#22c55e] transition">
+        Get Started
+      </button></a>
+<a href="https://www.sciencedirect.com/journal/journal-of-cleaner-production/vol/527/suppl/C">
+      <button class="px-8 py-3 border border-green-400 text-green-400 rounded-xl hover:bg-green-400/20 transition">
+        Learn More
+      </button></a>
     </div>
+  </section>
+
+  <!-- Features -->
+  <section class="px-8 py-20 bg-black/40">
+    <h3 class="text-3xl font-bold text-center mb-12">Key Features</h3>
+    <div class="grid md:grid-cols-4 gap-8">
+      <div class="p-6 bg-gray-800/60 rounded-2xl hover:scale-105 hover:shadow-[0_0_30px_#22c55e] transition">
+        <h4 class="text-xl font-semibold text-green-400 mb-2">🌱 Lifestyle Tracking</h4>
+        <p class="text-gray-300">Log food, travel, and shopping activities seamlessly.</p>
+      </div>
+      <div class="p-6 bg-gray-800/60 rounded-2xl hover:scale-105 hover:shadow-[0_0_30px_#22c55e] transition">
+        <h4 class="text-xl font-semibold text-green-400 mb-2">📊 Smart Analytics</h4>
+        <p class="text-gray-300">Visualize daily, weekly, and monthly emission trends.</p>
+      </div>
+      <div class="p-6 bg-gray-800/60 rounded-2xl hover:scale-105 hover:shadow-[0_0_30px_#22c55e] transition">
+        <h4 class="text-xl font-semibold text-green-400 mb-2">🤖 AI Insights</h4>
+        <p class="text-gray-300">Get personalized suggestions to reduce your footprint.</p>
+      </div>
+      <div class="p-6 bg-gray-800/60 rounded-2xl hover:scale-105 hover:shadow-[0_0_30px_#22c55e] transition">
+        <h4 class="text-xl font-semibold text-green-400 mb-2">🏆 Gamification</h4>
+        <p class="text-gray-300">Earn badges, join challenges, and compete on leaderboards.</p>
+      </div>
+    </div>
+  </section>
+
+<!-- Personal Dashboard Preview -->
+<section class="py-16 bg-gray-800">
+  <h3 class="text-3xl font-bold text-center text-green-400 mb-12">Your Personal Dashboard</h3>
+  <div class="max-w-4xl mx-auto bg-gray-900 rounded-2xl shadow-xl p-10 
+              transition-transform transform hover:scale-105 duration-300 ease-out">
+    <h4 class="text-2xl font-bold text-green-400 mb-4">Hello, User 👋</h4>
+    <p class="text-gray-300 mb-6">Here’s a quick look at your carbon usage this week:</p>
+    <div class="grid grid-cols-3 gap-6 text-center">
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h5 class="text-xl font-semibold text-green-400">120 kg</h5>
+        <p class="text-gray-400">This Week</p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h5 class="text-xl font-semibold text-green-400">-15%</h5>
+        <p class="text-gray-400">Improvement</p>
+      </div>
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h5 class="text-xl font-semibold text-green-400">Eco Rank: A</h5>
+        <p class="text-gray-400">Keep Going!</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="features container">
-    <h2>Features</h2>
-    <div class="feature-grid">
-        <div class="card">
-            <h3>🌱 Daily Activity Tracker</h3>
-            <p>Effortlessly log your transport, food choices, and energy consumption with our intuitive interface.</p>
-        </div>
-        <div class="card">
-            <h3>🎯 Eco Challenges</h3>
-            <p>Join community events like "No Car Week" and collaborate to reduce emissions together.</p>
-        </div>
-        <div class="card">
-            <h3>🏆 Leaderboard & Rewards</h3>
-            <p>Earn achievement badges and compete with friends on your sustainability journey.</p>
-        </div>
-    </div>
-</section>
 
-<section class="leaderboard container">
-    <h2>Leaderboard Preview</h2>
-    <div class="leaderboard-preview">
-        <div class="user">
-            <span>🏆</span>
-            <p><strong>Alice</strong><br />120 kg CO₂</p>
-        </div>
-        <div class="user">
-            <span>🥈</span>
-            <p><strong>Raj</strong><br />135 kg CO₂</p>
-        </div>
-        <div class="user">
-            <span>🥉</span>
-            <p><strong>Sofia</strong><br />140 kg CO₂</p>
-        </div>
-    </div>
-    <a class="btn" href="#">View Full Leaderboard</a>
-</section>
+  <!-- Mission -->
+  <section class="px-8 py-20 text-center">
+    <h3 class="text-3xl font-bold mb-6">Our Mission</h3>
+    <p class="max-w-2xl mx-auto text-gray-300">
+      We empower individuals and organizations to understand and reduce
+      their carbon emissions, moving towards a sustainable future.
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <section class="px-8 py-20 text-center bg-gradient-to-r from-green-700 to-green-500">
+    <h3 class="text-3xl font-bold mb-6">Join the Movement 🌍</h3>
+    <p class="mb-8 text-black font-medium">
+      Start tracking your carbon footprint and make a real difference.
+    </p>
+    <button class="px-8 py-3 bg-black text-green-400 font-semibold rounded-xl hover:shadow-[0_0_20px_#000] transition">
+      Get Started Now
+    </button>
+  </section>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Particle background
+  particlesJS("particles-js", {
+    "particles": {
+      "number": { "value": 80 },
+      "color": { "value": "#FFFFFF" },
+      "shape": { "type": "circle" },
+      "size": { "value": 3 },
+      "line_linked": { "enable": true, "distance": 150, "color": "#22c55e", "opacity": 0.4 },
+      "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" }
+    },
+    "interactivity": {
+      "events": {
+        "onhover": { "enable": true },
+        "onclick": { "enable": true }
+      }
+    }
+  });
+
+  // Chart.js dashboard preview
+  const ctx = document.getElementById('carbonChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Travel', 'Food', 'Energy', 'Shopping'],
+      datasets: [{
+        label: 'CO₂ Emissions (kg)',
+        data: [120, 90, 60, 40],
+        backgroundColor: ['#22c55e', '#16a34a', '#4ade80', '#86efac'],
+        borderColor: '#1a202c',
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'Weekly Emissions Breakdown',
+          color: '#edf2f7',
+          font: { size: 18 }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#a0aec0' },
+          grid: { color: '#4a5568' }
+        },
+        y: {
+          ticks: { color: '#a0aec0' },
+          grid: { color: '#4a5568' }
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}
+

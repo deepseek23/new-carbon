@@ -2,11 +2,29 @@
 {% load static %}
 
 {% block title %}
-Log in / X
+Log in 
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            {% if form.non_field_errors %}
+            <!-- Centered Error Toast above the login card -->
+            <div id="login-error-toast" class="error-toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="error-toast-body">
+                    <span class="me-2">❌</span>
+                    <div class="error-toast-text">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="error-toast-close" aria-label="Close">&times;</button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
     <div class="row justify-content-center">
         <div class="col-md-4">
             <!-- Login Form -->
@@ -44,7 +62,11 @@ Log in / X
                                    class="form-control bg-transparent border-secondary text-white" 
                                    name="{{ form.password.name }}" 
                                    id="{{ form.password.id_for_label }}"
-                                   placeholder="Enter your password"
+                    placeholder="Enter your password"
+                    value=""
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
                                    required>
                             {% if form.password.errors %}
                                 <div class="text-danger small mt-1">
@@ -72,6 +94,45 @@ Log in / X
 </div>
 
 <style>
+.error-toast {
+    /* Centered block above the login card */
+    position: relative;
+    z-index: 5;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fecaca;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
+    padding: 0.75rem 0.75rem;
+    width: 100%;
+    max-width: 520px;
+    margin: 20px auto 10px; /* centered horizontally */
+    display: none; /* default hidden, shown via JS when present */
+}
+
+.error-toast-body {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* center content */
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.error-toast-text {
+    font-weight: 600;
+}
+
+.error-toast-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #fecaca;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
 .form-control:focus {
     border-color: #1d9bf0 !important;
     box-shadow: 0 0 0 0.2rem rgba(29, 155, 240, 0.25) !important;
@@ -86,4 +147,47 @@ Log in / X
     min-height: 100vh;
 }
 </style>
+<script>
+// Show and auto-dismiss login error toast if it exists in DOM
+document.addEventListener('DOMContentLoaded', function () {
+    var toast = document.getElementById('login-error-toast');
+        if (toast) {
+            // Show centered above the card
+            toast.style.display = 'block';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 220ms ease, transform 220ms ease';
+            toast.style.transform = 'translateY(-10px)';
+            requestAnimationFrame(function(){
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            });
+
+                // Clear password field if invalid login occurred
+                var pwdInput = document.getElementById('{{ form.password.id_for_label }}');
+                if (pwdInput) {
+                    pwdInput.value = '';
+                    // Optional: put focus back to password for quick retry
+                    try { pwdInput.focus(); } catch (e) {}
+                }
+
+        // Close on click
+        var closeBtn = toast.querySelector('.error-toast-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(){
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateY(-10px)';
+                setTimeout(function(){ toast.remove(); }, 220);
+            });
+        }
+
+        // Auto-dismiss after 4 seconds
+        setTimeout(function(){
+            if (!toast) return;
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-10px)';
+            setTimeout(function(){ if (toast && toast.parentNode) toast.remove(); }, 220);
+        }, 4000);
+    }
+});
+</script>
 {% endblock %}

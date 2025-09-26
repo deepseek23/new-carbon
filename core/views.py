@@ -18,7 +18,6 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, 'Successfully logged in!')
-            return redirect('home')
         else:
             messages.error(request, 'Invalid username or password.')
     return render(request, 'registration/login.html')
@@ -32,7 +31,7 @@ def register(request):
             user.save()
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to Carbon Tracker.')
-            return redirect('home')
+            return redirect('track')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
