@@ -75,13 +75,21 @@ WSGI_APPLICATION = 'carbon.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres.txwipwnvsnmevqugarib',  # Supabase requires project-specific user
+        'PASSWORD': 'Abc@9819307129',
+        'HOST': 'aws-1-ap-south-1.pooler.supabase.com',  # Pooling host
+        'PORT': '5432',  # Common Supabase pooler port (or 5432 if using direct db)
+        'OPTIONS': {
+            'sslmode': 'require'  # Supabase connections often require SSL
+        }
     }
 }
+
+
 
 
 # Password validation
