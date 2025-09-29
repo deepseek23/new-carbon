@@ -11,16 +11,25 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+import logging
+
+os.environ["GRPC_VERBOSITY"] = "ERROR"
+os.environ["GLOG_minloglevel"] = "2"
+logging.getLogger("absl").setLevel(logging.ERROR)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@)w^j7&jqp_(#yz$^zitas5j23tnvk4+m#&7^x6(1@94n%7v2u'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-@)w^j7&jqp_(#yz$^zitas5j23tnvk4+m#&7^x6(1@94n%7v2u')
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

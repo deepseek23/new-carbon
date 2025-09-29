@@ -16,7 +16,64 @@
       {% load bootstrap5 %}
   {% bootstrap_css %}
   {% bootstrap_javascript %}
-    <link rel="stylesheet" href="{% static 'layout.css' %}">
+        <link rel="stylesheet" href="{% static 'layout.css' %}">
+        <style>
+            html, body {
+                background: #0a0a0a !important;
+                color: #fff !important;
+            }
+            body {
+                --bg-primary: #0a0a0a;
+                --bg-secondary: #111111;
+                --bg-card: #1a1a1a;
+                --text-primary: #ffffff;
+                --text-secondary: #a3a3a3;
+                --accent-green: #22c55e;
+                --accent-green-hover: #16a34a;
+                --accent-blue: #3b82f6;
+                --border: #222;
+                --shadow: 0 4px 24px rgba(0,0,0,0.5);
+                background-color: var(--bg-primary) !important;
+                color: var(--text-primary) !important;
+            }
+            .bg-white, .bg-light, .bg-dark, .bg-secondary, .bg-primary, .bg-success, .bg-info, .bg-warning, .bg-danger {
+                background-color: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+            }
+            .text-dark, .text-secondary, .text-muted, .text-black {
+                color: var(--text-secondary) !important;
+            }
+            .card, .container, .modal-content, .dropdown-menu, .form-control, .input-group-text {
+                background: var(--bg-card) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border) !important;
+            }
+            .form-label, label, legend {
+                color: var(--text-primary) !important;
+            }
+            input, textarea, select {
+                background: var(--bg-secondary) !important;
+                color: var(--text-primary) !important;
+                border-color: var(--border) !important;
+            }
+            .btn, .btn-primary, .btn-outline-light, .btn-outline-dark, .btn-success, .btn-danger {
+                background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover)) !important;
+                color: #fff !important;
+                border: none !important;
+            }
+            .btn-outline-light {
+                background: transparent !important;
+                color: var(--text-primary) !important;
+                border: 1px solid var(--border) !important;
+            }
+            .btn-outline-light:hover {
+                background: var(--accent-green) !important;
+                color: #fff !important;
+            }
+            .border-secondary {
+                border-color: var(--border) !important;
+            }
+        </style>
     <!-- Toastify CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
@@ -41,7 +98,7 @@
                         <a href="{% url 'register' %}" class="px-4 py-2 border border-green-400 text-green-400 rounded-lg hover:bg-green-400/20 transition font-semibold">Register</a>
                     {% endif %}
                 </div>
-            </header>
+            </header> {
 
     <!-- Main content -->
     <main>

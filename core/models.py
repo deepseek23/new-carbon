@@ -70,6 +70,11 @@ class CarbonFootprint(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     total_emission = models.FloatField(default=0, editable=False)  # auto-calculated (kg CO₂)
+    
+    def save(self, *args, **kwargs):
+        # Calculate and set the total emission before saving
+        self.total_emission = self.calculate_emission()
+        super().save(*args, **kwargs)
 
     def calculate_emission(self):
         # Transportation emissions

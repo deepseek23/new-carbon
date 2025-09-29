@@ -106,7 +106,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-calculate">
+                    <button type="submit" class="btn btn-primary btn-calculate" id="btnCalculate">
                         <span class="btn-icon">📊</span>
                         Calculate Carbon Footprint
                     </button>
@@ -139,7 +139,7 @@
                     <div class="result-display">
                         <div class="emission-circle">
                             <div class="circle-content">
-                                <span class="emission-number">{{ result }}</span>
+                                <span class="emission-number" id="resultValue">{{ result }}</span>
                                 <span class="emission-unit">kg CO₂</span>
                                 <span class="emission-period">per month</span>
                             </div>
@@ -165,7 +165,6 @@
                 </div>
 
                 <!-- Emission Breakdown -->
-                {% if emission_breakdown %}
                 <div class="breakdown-section">
                     <h3 class="section-heading">📊 Emission Breakdown</h3>
                     <div class="breakdown-grid">
@@ -173,37 +172,36 @@
                             <div class="card-icon">🚗</div>
                             <div class="card-content">
                                 <h4>Transportation</h4>
-                                <div class="emission-value">{{ emission_breakdown.transportation }} kg</div>
-                                <div class="emission-percentage">{% widthratio emission_breakdown.transportation emission_breakdown.total 100 %}%</div>
+                                <div class="emission-value"><span id="transportationValue">0</span> kg</div>
+                                <div class="emission-percentage"><span id="transportationPct">0</span>%</div>
                             </div>
                         </div>
                         <div class="breakdown-card food">
                             <div class="card-icon">🍽️</div>
                             <div class="card-content">
                                 <h4>Food</h4>
-                                <div class="emission-value">{{ emission_breakdown.food }} kg</div>
-                                <div class="emission-percentage">{% widthratio emission_breakdown.food emission_breakdown.total 100 %}%</div>
+                                <div class="emission-value"><span id="foodValue">0</span> kg</div>
+                                <div class="emission-percentage"><span id="foodPct">0</span>%</div>
                             </div>
                         </div>
                         <div class="breakdown-card energy">
                             <div class="card-icon">⚡</div>
                             <div class="card-content">
                                 <h4>Electricity</h4>
-                                <div class="emission-value">{{ emission_breakdown.electricity }} kg</div>
-                                <div class="emission-percentage">{% widthratio emission_breakdown.electricity emission_breakdown.total 100 %}%</div>
+                                <div class="emission-value"><span id="electricityValue">0</span> kg</div>
+                                <div class="emission-percentage"><span id="electricityPct">0</span>%</div>
                             </div>
                         </div>
                         <div class="breakdown-card waste">
                             <div class="card-icon">🗑️</div>
                             <div class="card-content">
                                 <h4>Waste</h4>
-                                <div class="emission-value">{{ emission_breakdown.waste }} kg</div>
-                                <div class="emission-percentage">{% widthratio emission_breakdown.waste emission_breakdown.total 100 %}%</div>
+                                <div class="emission-value"><span id="wasteValue">0</span> kg</div>
+                                <div class="emission-percentage"><span id="wastePct">0</span>%</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endif %}
 
                 <!-- Impact Summary -->
                 <div class="impact-summary">
@@ -212,92 +210,45 @@
                             <div class="summary-icon">📅</div>
                             <div class="summary-content">
                                 <span class="summary-label">Monthly Impact</span>
-                                <span class="summary-value">{{ result }} kg CO₂</span>
+                                <span class="summary-value" id="monthlyImpact">{{ result }} kg CO₂</span>
                             </div>
                         </div>
                         <div class="summary-item">
                             <div class="summary-icon">📆</div>
                             <div class="summary-content">
                                 <span class="summary-label">Annual Impact</span>
-                                <span class="summary-value">{% widthratio result 1 12 %} kg CO₂</span>
+                                <span class="summary-value" id="annualImpact">{% widthratio result 1 12 %} kg CO₂</span>
                             </div>
                         </div>
                         <div class="summary-item">
                             <div class="summary-icon">🌳</div>
                             <div class="summary-content">
                                 <span class="summary-label">Trees to Offset</span>
-                                <span class="summary-value">{% widthratio result 22 1 %} trees</span>
+                                <span class="summary-value" id="treesOffset">{% widthratio result 22 1 %} trees</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Personalized Tips -->
-                {% if tips %}
-                <div class="tips-section">
-                    <h3 class="section-heading">💡 Personalized Recommendations</h3>
+                <!-- Tips Message (Client-Fetched) -->
+                <div class="tips-section" id="tipsSection" style="display: none;">
+                    <h3 class="section-heading">💡 Personalized Tip</h3>
                     <div class="assessment-card">
-                        <div class="assessment-content">{{ tips.assessment }}</div>
+                        <div class="assessment-content" id="tipsMessage"></div>
                     </div>
-                    
-                    <div class="tips-grid">
-                        {% for tip in tips.tips %}
-                        <div class="tip-card">
-                            <div class="tip-header">
-                                <div class="tip-icon">{{ tip.icon }}</div>
-                                <div class="tip-category">{{ tip.category }}</div>
-                            </div>
-                            <div class="tip-content">
-                                <p class="tip-text">{{ tip.tip }}</p>
-                                <div class="tip-savings">
-                                    <span class="savings-icon">💚</span>
-                                    <span class="savings-text">{{ tip.savings }}</span>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+
+                {% if messages %}
+                <div class="tips-section">
+                    <h3 class="section-heading">⚠️ Error</h3>
+                    <div class="assessment-card" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444;">
+                        {% for message in messages %}
+                            <div class="assessment-content" style="color: #ef4444;">{{ message }}</div>
                         {% endfor %}
-                    </div>
-                    
-                    <div class="motivation-card">
-                        <div class="motivation-content">{{ tips.motivation }}</div>
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- General Tips -->
-                <div class="general-tips">
-                    <h3 class="section-heading">🌱 General Tips for Everyone</h3>
-                    <div class="tips-list">
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Use public transportation or carpool when possible</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Consider walking or cycling for short distances</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Choose fuel-efficient vehicles or electric cars</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Reduce unnecessary flights and choose direct routes</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Eat more plant-based meals and reduce meat consumption</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Use energy-efficient appliances and LED lighting</span>
-                        </div>
-                        <div class="tip-item">
-                            <span class="tip-bullet">✓</span>
-                            <span class="tip-text">Compost organic waste and recycle more</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -343,20 +294,93 @@ function resetForm() {
 // Add form change listener to show result container when form is submitted
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('carbonForm');
-    form.addEventListener('submit', function() {
-        // Show result container when form is submitted
-        const resultContainer = document.getElementById('resultContainer');
-        if (resultContainer) {
-            resultContainer.style.display = 'block';
-            // Add animation
-            resultContainer.style.opacity = '0';
-            resultContainer.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                resultContainer.style.transition = 'all 0.5s ease';
-                resultContainer.style.opacity = '1';
-                resultContainer.style.transform = 'translateY(0)';
-            }, 100);
-        }
+    const resultContainer = document.getElementById('resultContainer');
+    const btnCalculate = document.getElementById('btnCalculate');
+
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    };
+    const csrftoken = getCookie('csrftoken');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Collect form values into payload
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        btnCalculate.disabled = true;
+        const original = btnCalculate.innerHTML;
+        btnCalculate.innerHTML = '<span class="btn-icon">⏳</span>Calculating...';
+
+        fetch('{% url "ai_tips_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken || ''
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.ok ? r.json() : r.json().then(err => Promise.reject(err)))
+        .then(data => {
+            // Update result UI
+            const result = data.result ?? 0;
+            const eb = data.emission_breakdown || {};
+            document.getElementById('resultValue').textContent = result;
+            document.getElementById('monthlyImpact').textContent = `${result} kg CO₂`;
+            document.getElementById('annualImpact').textContent = `${Math.round(result * 12)} kg CO₂`;
+            document.getElementById('treesOffset').textContent = `${Math.round(result / 22)} trees`;
+
+            // Ensure breakdown section is present; if it's in template, we can just update numbers if needed.
+            const t = eb.transportation ?? 0;
+            const f = eb.food ?? 0;
+            const e = eb.electricity ?? 0;
+            const w = eb.waste ?? 0;
+            const total = (t + f + e + w) || 1;
+            const pct = (x) => Math.round((x / total) * 100);
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setText('transportationValue', t);
+            setText('foodValue', f);
+            setText('electricityValue', e);
+            setText('wasteValue', w);
+            setText('transportationPct', pct(t));
+            setText('foodPct', pct(f));
+            setText('electricityPct', pct(e));
+            setText('wastePct', pct(w));
+
+            // Show result container with animation
+            if (resultContainer) {
+                resultContainer.style.display = 'block';
+                resultContainer.style.opacity = '0';
+                resultContainer.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    resultContainer.style.transition = 'all 0.5s ease';
+                    resultContainer.style.opacity = '1';
+                    resultContainer.style.transform = 'translateY(0)';
+                }, 100);
+            }
+
+            // Show AI tip
+            if (data.message) {
+                const tipsSection = document.getElementById('tipsSection');
+                const tipsMessage = document.getElementById('tipsMessage');
+                tipsMessage.textContent = data.message;
+                tipsSection.style.display = 'block';
+            }
+        })
+        .catch(err => {
+            console.warn('AI Tips API error', err);
+            const tipsSection = document.getElementById('tipsSection');
+            const tipsMessage = document.getElementById('tipsMessage');
+            tipsMessage.textContent = 'Could not get AI tip right now. Please try again later.';
+            tipsSection.style.display = 'block';
+        })
+        .finally(() => {
+            btnCalculate.disabled = false;
+            btnCalculate.innerHTML = original;
+        });
     });
 });
 </script>
