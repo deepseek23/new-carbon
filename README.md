@@ -8,8 +8,7 @@ Open your terminal and navigate to the project directory. Then, run the followin
 
 ```bash
 cd <repoName>
-pip install uv
-uv venv
+python -m venv venv
 ```
 
 ## 2. Activate the Virtual Environment
@@ -23,7 +22,7 @@ uv venv
 - **On Windows:**
 
     ```cmd
-    .venv\Scripts\activate
+    venv\Scripts\activate
     ```
 
 ## 3. Install the Requirements
@@ -31,7 +30,7 @@ uv venv
 After activating the virtual environment, install the required dependencies:
 
 ```bash
-uv pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## 4. Run the Development Server
