@@ -7,6 +7,7 @@ This guide will help you set up a Python virtual environment, activate it, insta
 Open your terminal and navigate to the project directory. Then, run the following command to create a new virtual environment named `venv`:
 
 ```bash
+pip install uv
 uv venv
 ```
 
