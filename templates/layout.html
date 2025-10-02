@@ -51,26 +51,21 @@
 <body class="relative">
 
   <!-- Header -->
- <header class="bg-white shadow-sm fixed top-0 w-full z-50">
-  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-  <!-- Logo -->
-  <a href="{% url 'landing' %}" class="text-2xl font-bold text-green-500 flex items-center gap-2">
-    <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-10 h-10  object-cover
-    ">
-    <h1>Carbon-footprint-tracker</h1>
-  </a>
-  
-
-
+  <header class="bg-white shadow-sm fixed top-0 w-full z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="{% url 'landing' %}" class="text-2xl font-bold text-green-500 flex items-center gap-2">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded">
+      <h1>Carbon-footprint-tracker</h1>
+    </a>
 
     <!-- Navigation -->
     <nav class="hidden md:flex space-x-8 text-gray-700 font-medium">
       <a href="{% url 'landing' %}" class="hover:text-green-500 transition">Home</a>
       <a href="{% url 'track' %}" class="hover:text-green-500 transition">Track</a>
-      <a href="{% url 'dashboard' %}" class="hover:text-green-500 transition">Dashboard
-      </a>
+      <a href="{% url 'dashboard' %}" class="hover:text-green-500 transition">Dashboard</a>
       <a href="{% url 'leaderboard' %}" class="hover:text-green-500 transition">Leaderboard</a>
-      <a href="#" class="hover:text-green-500 transition">Challenges</a>
+      <a href="{% url 'challenges:index' %}" class="hover:text-green-500 transition">Challenges</a>
     </nav>
 
     <!-- CTA Button -->

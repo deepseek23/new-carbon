@@ -14,6 +14,7 @@ from django.db.models import Sum, Count, Max
 
 from .forms import UserRegistrationForm, CarbonFootprintForm
 from .models import CarbonFootprint
+from challenges.models import UserChallenge, ChallengeProgress
 
 # Optional Google Gemini client (may be None)
 try:
@@ -141,6 +142,7 @@ def track(request):
     return render(request, 'track.html', context)
 
 @login_required
+@login_required
 def dashboard(request):
     # Get time period from request (default to 'monthly')
     time_period = request.GET.get('period', 'monthly')
@@ -204,6 +206,25 @@ def dashboard(request):
         else:
             avg_daily = total_emissions / max(len(footprints), 1) if footprints else 0
     
+    # Get user's active challenges
+    active_challenges = UserChallenge.objects.filter(
+        user=request.user, 
+        status='active'
+    ).select_related('challenge_type')[:3]  # Limit to 3 for dashboard
+    
+    # Get recent challenge progress
+    recent_progress = ChallengeProgress.objects.filter(
+        user_challenge__user=request.user,
+        date__gte=now - timedelta(days=7)
+    ).order_by('-date')[:5]
+    
+    # Calculate total carbon saved from challenges
+    total_carbon_saved = ChallengeProgress.objects.filter(
+        user_challenge__user=request.user,
+        completed=True,
+        carbon_saved__isnull=False
+    ).aggregate(total=Sum('carbon_saved'))['total'] or 0
+    
     # Prepare chart data
     chart_footprints = footprints[:10]  # Limit to last 10 entries for chart
     
@@ -216,6 +237,10 @@ def dashboard(request):
         "period_label": period_label,
         "avg_daily": avg_daily,
         "total_entries": footprints.count(),
+        # Challenge data
+        "active_challenges": active_challenges,
+        "recent_progress": recent_progress,
+        "total_carbon_saved": total_carbon_saved,
     }
     return render(request, "dashboard.html", context)
 

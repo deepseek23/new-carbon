@@ -1,0 +1,217 @@
+{% extends 'layout.html' %}
+
+{% block title %}My Challenges - Carbon Tracker{% endblock %}
+
+{% block content %}
+<style>
+    .progress-bar {
+        transition: width 0.3s ease;
+    }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">My Challenges</h1>
+                <p class="text-gray-600 mt-2">Track your progress and stay motivated!</p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{% url 'challenges:index' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    Browse Challenges
+                </a>
+                <a href="{% url 'dashboard' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+        <!-- Active Challenges -->
+        <div class="space-y-6">
+            {% for item in challenges_with_progress %}
+                {% with challenge=item.challenge progress=item.recent_progress completion_rate=item.completion_rate %}
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-{{ challenge.challenge_type.icon_color }}-100 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-{{ challenge.challenge_type.icon_color }}-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    {% if challenge.challenge_type.category == 'food' %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                                    {% elif challenge.challenge_type.category == 'transport' %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    {% elif challenge.challenge_type.category == 'waste' %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    {% elif challenge.challenge_type.category == 'energy' %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    {% elif challenge.challenge_type.category == 'shopping' %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    {% else %}
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    {% endif %}
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900">{{ challenge.challenge_type.title }}</h2>
+                                <p class="text-gray-600 mt-1">{{ challenge.challenge_type.description }}</p>
+                                <div class="flex items-center mt-2 space-x-4 text-sm text-gray-500">
+                                    <span class="bg-gray-100 px-2 py-1 rounded">{{ challenge.challenge_type.get_category_display }}</span>
+                                    {% if challenge.days_remaining %}
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                            {{ challenge.days_remaining }} days left
+                                        </span>
+                                    {% endif %}
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">
+                                        ~{{ challenge.challenge_type.carbon_impact }}kg CO₂ saved
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold text-{{ challenge.challenge_type.icon_color }}-600">
+                                {{ completion_rate }}%
+                            </div>
+                            <div class="text-sm text-gray-500">Complete</div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Progress</span>
+                            <span>{{ completion_rate }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-{{ challenge.challenge_type.icon_color }}-600 h-3 rounded-full progress-bar" style="width: {{ completion_rate }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Progress Tracking -->
+                    <div class="border-t pt-4">
+                        <h3 class="text-lg font-semibold mb-3">Recent Progress</h3>
+                        <div class="grid grid-cols-7 gap-2 mb-4">
+                            {% for day_progress in progress %}
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-500 mb-1">
+                                        {{ day_progress.date|date:"M j" }}
+                                    </div>
+                                    <div class="w-8 h-8 rounded-full mx-auto flex items-center justify-center {% if day_progress.completed %}bg-green-500 text-white{% else %}bg-gray-200 text-gray-400{% endif %}">
+                                        {% if day_progress.completed %}✓{% else %}○{% endif %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="col-span-7 text-center text-gray-500 py-4">
+                                    No progress recorded yet. Start tracking today!
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Today's Progress -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">Today's Progress</h4>
+                            <div class="flex items-center space-x-4">
+                                <button onclick="updateProgress({{ challenge.id }}, true, this)" 
+                                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    Mark Complete
+                                </button>
+                                <button onclick="updateProgress({{ challenge.id }}, false, this)" 
+                                        class="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition-colors">
+                                    Mark Incomplete
+                                </button>
+                            </div>
+                            <div class="mt-3">
+                                <textarea id="notes-{{ challenge.id }}" placeholder="Add notes about today's progress..." 
+                                         class="w-full p-2 border border-gray-300 rounded-lg resize-none" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <div class="bg-white rounded-xl shadow-md p-8 text-center">
+                    <div class="text-gray-400 mb-4">
+                        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No Active Challenges</h3>
+                    <p class="text-gray-500 mb-4">You haven't joined any challenges yet. Start making a difference today!</p>
+                    <a href="{% url 'challenges:index' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors inline-block">
+                        Browse Available Challenges
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function updateProgress(challengeId, completed, button) {
+            const notes = document.getElementById(`notes-${challengeId}`).value;
+            
+            // Show loading state
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Updating...';
+            
+            fetch(`{% url 'challenges:update_progress' 0 %}`.replace('0', challengeId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    completed: completed,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success feedback
+                    button.textContent = completed ? 'Completed! ✓' : 'Updated ○';
+                    button.classList.add(completed ? 'bg-green-700' : 'bg-gray-500');
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        button.classList.remove('bg-green-700', 'bg-gray-500');
+                        
+                        // Clear notes
+                        document.getElementById(`notes-${challengeId}`).value = '';
+                        
+                        // Optionally reload page to show updated progress
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert(data.message);
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                button.disabled = false;
+                button.textContent = originalText;
+            });
+        }
+    </script>
+</div>
+{% endblock %}

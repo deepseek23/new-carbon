@@ -51,6 +51,7 @@ class CarbonFootprint(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="footprints")
     
+    
     # Transportation
     car_travel_km = models.FloatField(default=0)
     fuel_type = models.CharField(max_length=20, choices=FUEL_CHOICES, default="petrol")
