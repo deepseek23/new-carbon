@@ -245,19 +245,48 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 @login_required
+@login_required
 def leaderboard(request):
-    """Leaderboard of users by their total emissions (lowest first)."""
+    """Enhanced leaderboard of users by their emissions across different time periods."""
     
-    # Get all carbon footprints with user data
-    all_footprints = CarbonFootprint.objects.select_related('user').all()
+    # Get time period from request (default to 'monthly')
+    time_period = request.GET.get('period', 'monthly')
     
-    if not all_footprints.exists():
-        # No data available
-        return render(request, 'leaderboard.html', {'ranked': [], 'no_data': True})
+    # Calculate date range based on time period
+    now = timezone.now()
+    if time_period == 'daily':
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        period_label = "Today"
+    elif time_period == 'weekly':
+        start_date = now - timedelta(days=7)
+        period_label = "This Week"
+    elif time_period == 'monthly':
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        period_label = "This Month"
+    else:  # all time
+        start_date = None
+        period_label = "All Time"
     
-    # Manual aggregation to ensure we get all users
+    # Get carbon footprints for the specified period
+    if start_date:
+        footprints = CarbonFootprint.objects.select_related('user').filter(
+            created_at__gte=start_date
+        )
+    else:
+        footprints = CarbonFootprint.objects.select_related('user').all()
+    
+    if not footprints.exists():
+        context = {
+            'ranked': [], 
+            'no_data': True,
+            'time_period': time_period,
+            'period_label': period_label
+        }
+        return render(request, 'leaderboard.html', context)
+    
+    # Manual aggregation to ensure we get all users for the period
     user_stats = {}
-    for footprint in all_footprints:
+    for footprint in footprints:
         user_id = footprint.user.id
         username = footprint.user.username
         
@@ -266,7 +295,8 @@ def leaderboard(request):
                 'username': username,
                 'total_emission': 0,
                 'entries_count': 0,
-                'last_updated': footprint.created_at
+                'last_updated': footprint.created_at,
+                'avg_daily': 0
             }
         
         user_stats[user_id]['total_emission'] += footprint.total_emission or 0
@@ -276,22 +306,50 @@ def leaderboard(request):
         if footprint.created_at > user_stats[user_id]['last_updated']:
             user_stats[user_id]['last_updated'] = footprint.created_at
     
+    # Calculate average daily emissions for each user
+    for user_data in user_stats.values():
+        if time_period == 'daily':
+            user_data['avg_daily'] = user_data['total_emission']
+        elif time_period == 'weekly':
+            user_data['avg_daily'] = user_data['total_emission'] / 7
+        elif time_period == 'monthly':
+            # Get actual days in current month
+            days_in_month = (now.replace(month=now.month+1, day=1) - timedelta(days=1)).day if now.month < 12 else 31
+            user_data['avg_daily'] = user_data['total_emission'] / days_in_month
+        else:  # all time
+            user_data['avg_daily'] = user_data['total_emission'] / max(user_data['entries_count'], 1)
+    
     # Convert to list and sort by total emissions (lowest first)
     ranked_users = list(user_stats.values())
     ranked_users.sort(key=lambda x: (x['total_emission'], x['username']))
     
-    # Add rank numbers
+    # Add rank numbers and additional stats
     ranked = []
     for i, user_data in enumerate(ranked_users, 1):
         ranked.append({
             'rank': i,
             'username': user_data['username'],
             'total_emission': round(user_data['total_emission'], 2),
+            'avg_daily': round(user_data['avg_daily'], 2),
             'entries_count': user_data['entries_count'],
             'last_updated': user_data['last_updated'],
         })
     
-    return render(request, 'leaderboard.html', {'ranked': ranked})
+    # Calculate some period statistics
+    total_users = len(ranked)
+    total_emissions = sum(user['total_emission'] for user in ranked)
+    avg_emission = total_emissions / total_users if total_users > 0 else 0
+    
+    context = {
+        'ranked': ranked,
+        'time_period': time_period,
+        'period_label': period_label,
+        'total_users': total_users,
+        'total_emissions': round(total_emissions, 2),
+        'avg_emission': round(avg_emission, 2),
+    }
+    
+    return render(request, 'leaderboard.html', context)
 
 @login_required
 def tips_api(request):
