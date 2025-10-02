@@ -1,16 +1,28 @@
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f7fa;
+    --bg-card: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border: rgba(17,24,39,0.10);
+    --accent-green: #22c55e;
+    --accent-green-hover: #16a34a;
+    --accent-blue: #3b82f6;
+    --shadow: 0 8px 24px rgba(17,24,39,0.06);
+}
 
 .container {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111111;
-    --bg-card: #1a1a1a;
-    --text-primary: #ffffff;
-    --text-secondary: #a3a3a3;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-card: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
 /* Header sticky container (transparent wrapper) */
     background: linear-gradient(90deg,
-        rgba(0,0,0,0.45) 0%,
+        rgba(0,0,0,0.045) 0%,
         rgba(0,0,0,0.0) 18%,
         rgba(0,0,0,0.0) 82%,
-        rgba(0,0,0,0.45) 100%
+        rgba(0,0,0,0.045) 100%
     );
 }
 img {
@@ -456,3 +468,126 @@ footer a:hover {
     .feature-grid, .steps, .lb, .stats { grid-template-columns: 1fr; }
     .landing .hero { padding-top: 3rem; }
 }
+
+/* =====================================
+   Global Light Theme Base (All Pages)
+   ===================================== */
+html, body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 { 
+    color: var(--text-primary);
+    margin-top: 0;
+}
+
+p { color: var(--text-secondary); }
+
+/* Utilities */
+.text-secondary { color: var(--text-secondary); }
+.text-primary { color: var(--text-primary); }
+.bg-card { background: var(--bg-card); }
+.bg-secondary { background: var(--bg-secondary); }
+.border-default { border: 1px solid var(--border); }
+.shadow-default { box-shadow: var(--shadow); }
+
+/* Cards/Sections */
+.form-container,
+.form-section,
+.card,
+.chart-card,
+.summary-item,
+.breakdown-card,
+.tip-card,
+.motivation-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+/* Inputs */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select, textarea {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+}
+
+/* Sliders */
+input[type="range"] {
+    appearance: none;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 999px;
+    border: 1px solid var(--border);
+}
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent-green);
+    border: none;
+    box-shadow: 0 2px 6px rgba(34,197,94,0.35);
+}
+input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent-green);
+    border: none;
+}
+
+/* Buttons */
+.btn, .btn-primary {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-green-hover));
+    color: #fff;
+    border: 0;
+    font-weight: 700;
+    padding: .7rem 1.1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(34,197,94,.25);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn:hover, .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(34,197,94,.30); }
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #fff;
+    border: 0;
+    font-weight: 700;
+    padding: .7rem 1.1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+}
+.btn-secondary:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,.15); }
+
+/* Links */
+a { color: var(--accent-green); text-decoration: none; }
+a:hover { color: var(--accent-green-hover); text-decoration: none; }
+
+/* Tables (if used) */
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid var(--border); padding: .6rem .8rem; }
+th { background: var(--bg-secondary); color: var(--text-primary); }
+
+/* Charts */
+canvas { background: transparent; }
+
+/* Header tweaks */
+header { background: #ffffff; border-bottom: 1px solid var(--border); }
+nav a { color: #374151; }
+nav a:hover { color: var(--accent-green); }

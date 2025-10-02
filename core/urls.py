@@ -28,6 +28,7 @@ urlpatterns = [
     path('register/', views.register, name="register"),
     path('home/', views.track, name='track'),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("leaderboard/", views.leaderboard, name="leaderboard"),
     path('api/tips/', views.tips_api, name='tips_api'),
     path('api/ai-tips/', views.ai_tips_api, name='ai_tips_api'),
 ]

@@ -126,9 +126,5 @@ class CarbonFootprint(models.Model):
             'total': round(car_emission + flight_emission + public_emission + food_emission + electricity_emission + waste_emission, 2)
         }
 
-    def save(self, *args, **kwargs):
-        self.total_emission = self.calculate_emission()
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.user.username} - {self.created_at.date()} - {self.total_emission} kg CO₂"

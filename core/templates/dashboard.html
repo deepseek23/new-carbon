@@ -6,15 +6,31 @@
 {% block content %}
 <div class="dashboard-container">
     <!-- Header Section -->
-    <div class="dashboard-header">
-        <div class="welcome-section">
-            <h1 class="dashboard-title">🌍 Your Carbon Footprint Dashboard</h1>
-            <p class="dashboard-subtitle">Track your environmental impact and make a difference</p>
+   <div class="dashboard-header flex justify-between items-start p-8 bg-white border-b border-gray-200">
+    
+    <div class="welcome-section">
+        <div class="mb-4">
+            <h1 class="text-gray-900 text-5xl font-bold mb-2">
+                &#x1F30E; Your Carbon Footprint Dashboard
+            </h1>
+            
+            <h2 class="text-gray-700 text-xl font-medium mt-0">
+                👋 Hey {{ user.get_username|default:'User' }}
+            </h2>
         </div>
-        <div class="last-updated">
-            <span class="update-badge">Last updated: {{ latest.created_at|date:"M d, Y" }}</span>
-        </div>
+        
+        <p class="dashboard-subtitle text-gray-500 text-base">
+            Track your environmental impact and make a difference
+        </p>
     </div>
+    
+    <div class="last-updated">
+        <span class="update-badge bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
+            Last updated: {{ latest.created_at|date:"M d, Y" }}
+        </span>
+    </div>
+
+</div>
 
     <!-- Time Period Selector -->
     <div class="period-selector">
@@ -298,11 +314,11 @@
                             size: 14,
                             family: 'Inter'
                         },
-                        color: '#ffffff'
+                        color: '#111827'
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
                     titleColor: '#ffffff',
                     bodyColor: '#ffffff',
                     borderColor: '#22c55e',
@@ -345,11 +361,11 @@
                             size: 14,
                             family: 'Inter'
                         },
-                        color: '#ffffff'
+                        color: '#111827'
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
                     titleColor: '#ffffff',
                     bodyColor: '#ffffff',
                     borderColor: '#22c55e',
@@ -360,10 +376,10 @@
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(0, 0, 0, 0.06)'
                     },
                     ticks: {
-                        color: '#a3a3a3',
+                        color: '#6b7280',
                         font: {
                             family: 'Inter'
                         }
@@ -371,10 +387,10 @@
                 },
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(0, 0, 0, 0.06)'
                     },
                     ticks: {
-                        color: '#a3a3a3',
+                        color: '#6b7280',
                         font: {
                             family: 'Inter'
                         }

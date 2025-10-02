@@ -315,13 +315,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const original = btnCalculate.innerHTML;
         btnCalculate.innerHTML = '<span class="btn-icon">⏳</span>Calculating...';
 
-        fetch('{% url "ai_tips_api" %}', {
+        // First, submit the form data to save it in the database
+        fetch('{% url "track" %}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken || ''
+                'X-CSRFToken': csrftoken || '',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(payload)
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Form data saved successfully');
+                // Now get AI tips
+                return fetch('{% url "ai_tips_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                throw new Error('Failed to save form data');
+            }
         })
         .then(r => r.ok ? r.json() : r.json().then(err => Promise.reject(err)))
         .then(data => {
@@ -369,13 +386,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 tipsMessage.textContent = data.message;
                 tipsSection.style.display = 'block';
             }
+
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.innerHTML = '<strong>✅ Success!</strong> Your carbon footprint data has been saved and calculated.';
+            successMsg.style.marginTop = '1rem';
+            form.parentNode.insertBefore(successMsg, form.nextSibling);
+            
+            // Remove success message after 5 seconds
+            setTimeout(() => {
+                if (successMsg.parentNode) {
+                    successMsg.parentNode.removeChild(successMsg);
+                }
+            }, 5000);
         })
         .catch(err => {
-            console.warn('AI Tips API error', err);
+            console.error('Error:', err);
+            
+            // Show error message
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'alert alert-danger';
+            errorMsg.innerHTML = '<strong>❌ Error!</strong> There was a problem saving your data. Please try again.';
+            errorMsg.style.marginTop = '1rem';
+            form.parentNode.insertBefore(errorMsg, form.nextSibling);
+            
+            // Remove error message after 5 seconds
+            setTimeout(() => {
+                if (errorMsg.parentNode) {
+                    errorMsg.parentNode.removeChild(errorMsg);
+                }
+            }, 5000);
+            
+            // Still try to show AI tips if available
             const tipsSection = document.getElementById('tipsSection');
             const tipsMessage = document.getElementById('tipsMessage');
-            tipsMessage.textContent = 'Could not get AI tip right now. Please try again later.';
-            tipsSection.style.display = 'block';
+            if (tipsSection && tipsMessage) {
+                tipsMessage.textContent = 'Could not get AI tip right now. Please try again later.';
+                tipsSection.style.display = 'block';
+            }
         })
         .finally(() => {
             btnCalculate.disabled = false;
@@ -949,6 +998,39 @@ document.addEventListener('DOMContentLoaded', function() {
     color: var(--text-secondary);
     font-size: 0.9rem;
     flex: 1;
+}
+
+/* Alert messages */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border: 1px solid;
+    font-size: 14px;
+    animation: slideIn 0.3s ease;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive Design */

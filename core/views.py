@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.db.models import Sum, Count, Max
 
 from .forms import UserRegistrationForm, CarbonFootprintForm
 from .models import CarbonFootprint
@@ -76,13 +78,29 @@ def track(request):
             # If your model needs a computed total_emission, either compute here
             # or ensure model.save() handles it.
             footprint.save()
-            messages.success(request, 'Carbon footprint entry saved.')
-            return redirect('dashboard')
+            
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Carbon footprint entry saved successfully.',
+                    'total_emission': footprint.total_emission
+                })
+            else:
+                messages.success(request, 'Carbon footprint entry saved.')
+                return redirect('dashboard')
         else:
-            # expose form errors
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
+            else:
+                # expose form errors
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
     else:
         form = CarbonFootprintForm()
     return render(request, 'track.html', {'form': form})
@@ -165,6 +183,55 @@ def dashboard(request):
         "total_entries": footprints.count(),
     }
     return render(request, "dashboard.html", context)
+
+@login_required
+def leaderboard(request):
+    """Leaderboard of users by their total emissions (lowest first)."""
+    
+    # Get all carbon footprints with user data
+    all_footprints = CarbonFootprint.objects.select_related('user').all()
+    
+    if not all_footprints.exists():
+        # No data available
+        return render(request, 'leaderboard.html', {'ranked': [], 'no_data': True})
+    
+    # Manual aggregation to ensure we get all users
+    user_stats = {}
+    for footprint in all_footprints:
+        user_id = footprint.user.id
+        username = footprint.user.username
+        
+        if user_id not in user_stats:
+            user_stats[user_id] = {
+                'username': username,
+                'total_emission': 0,
+                'entries_count': 0,
+                'last_updated': footprint.created_at
+            }
+        
+        user_stats[user_id]['total_emission'] += footprint.total_emission or 0
+        user_stats[user_id]['entries_count'] += 1
+        
+        # Update last_updated if this entry is more recent
+        if footprint.created_at > user_stats[user_id]['last_updated']:
+            user_stats[user_id]['last_updated'] = footprint.created_at
+    
+    # Convert to list and sort by total emissions (lowest first)
+    ranked_users = list(user_stats.values())
+    ranked_users.sort(key=lambda x: (x['total_emission'], x['username']))
+    
+    # Add rank numbers
+    ranked = []
+    for i, user_data in enumerate(ranked_users, 1):
+        ranked.append({
+            'rank': i,
+            'username': user_data['username'],
+            'total_emission': round(user_data['total_emission'], 2),
+            'entries_count': user_data['entries_count'],
+            'last_updated': user_data['last_updated'],
+        })
+    
+    return render(request, 'leaderboard.html', {'ranked': ranked})
 
 @login_required
 def tips_api(request):
