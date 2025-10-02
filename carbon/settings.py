@@ -87,7 +87,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
-        'USER': 'postgres.txwipwnvsnmevqugarib',  # Supabase requires project-specific user
+        'USER': 'postgres.fjhxkztklweynhjmpjan',  # Supabase requires project-specific user
         'PASSWORD': 'Abc@9819307129',
         'HOST': 'aws-1-ap-south-1.pooler.supabase.com',  # Pooling host
         'PORT': '5432',  # Common Supabase pooler port (or 5432 if using direct db)

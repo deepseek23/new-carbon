@@ -8,6 +8,21 @@
         <h1 class="mb-4 text-center">🌱 Carbon Footprint Calculator</h1>
         <p class="text-center mb-5 text-secondary">Calculate your environmental impact and take steps towards a greener future</p>
 
+        <!-- Daily Limit Indicator -->
+        <div class="daily-limit-container mb-4">
+            {% if can_calculate %}
+                <div class="alert alert-info text-center">
+                    <strong>📊 Daily Calculations:</strong> {{ daily_count }}/3 used today. 
+                    <span class="text-green-600">{{ remaining_calculations }} calculations remaining</span>
+                </div>
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    <strong>⚠️ Daily Limit Reached:</strong> You've used all 3 calculations for today ({{ daily_count }}/3). 
+                    <span class="text-orange-600">Please try again tomorrow!</span>
+                </div>
+            {% endif %}
+        </div>
+
         <!-- Input Form -->
         <div class="form-container">
             <form method="post" class="carbon-form" id="carbonForm">
@@ -106,9 +121,14 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-calculate" id="btnCalculate">
+                    <button type="submit" class="btn btn-primary btn-calculate" id="btnCalculate" 
+                            {% if not can_calculate %}disabled{% endif %}>
                         <span class="btn-icon">📊</span>
-                        Calculate Carbon Footprint
+                        {% if can_calculate %}
+                            Calculate Carbon Footprint ({{ remaining_calculations }} left today)
+                        {% else %}
+                            Daily Limit Reached (3/3 used)
+                        {% endif %}
                     </button>
                     <button type="button" class="btn btn-secondary btn-reset" onclick="resetForm()">
                         <span class="btn-icon">🔄</span>
@@ -324,9 +344,17 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: formData
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.json().then(data => ({ data, status: response.status })))
+        .then(({ data, status }) => {
+            if (status === 429) {
+                // Daily limit reached
+                throw new Error(data.message || 'Daily calculation limit reached');
+            } else if (data.success) {
                 console.log('Form data saved successfully');
+                
+                // Update daily limit display
+                updateDailyLimitDisplay(data.daily_count, data.remaining);
+                
                 // Now get AI tips
                 return fetch('{% url "ai_tips_api" %}', {
                     method: 'POST',
@@ -337,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(payload)
                 });
             } else {
-                throw new Error('Failed to save form data');
+                throw new Error(data.message || 'Failed to save form data');
             }
         })
         .then(r => r.ok ? r.json() : r.json().then(err => Promise.reject(err)))
@@ -404,33 +432,81 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => {
             console.error('Error:', err);
             
-            // Show error message
+            // Check if this is a daily limit error
+            const isLimitError = err.message && err.message.includes('Daily calculation limit reached');
+            
+            // Show appropriate error message
             const errorMsg = document.createElement('div');
-            errorMsg.className = 'alert alert-danger';
-            errorMsg.innerHTML = '<strong>❌ Error!</strong> There was a problem saving your data. Please try again.';
+            errorMsg.className = isLimitError ? 'alert alert-warning' : 'alert alert-danger';
+            errorMsg.innerHTML = isLimitError 
+                ? `<strong>⚠️ Daily Limit Reached!</strong> ${err.message}`
+                : '<strong>❌ Error!</strong> There was a problem saving your data. Please try again.';
             errorMsg.style.marginTop = '1rem';
             form.parentNode.insertBefore(errorMsg, form.nextSibling);
             
-            // Remove error message after 5 seconds
+            // If limit reached, disable the button
+            if (isLimitError) {
+                btnCalculate.disabled = true;
+                btnCalculate.innerHTML = '<span class="btn-icon">🚫</span>Daily Limit Reached (3/3 used)';
+                updateDailyLimitDisplay(3, 0);
+            }
+            
+            // Remove error message after 8 seconds (longer for limit message)
             setTimeout(() => {
                 if (errorMsg.parentNode) {
                     errorMsg.parentNode.removeChild(errorMsg);
                 }
-            }, 5000);
+            }, isLimitError ? 8000 : 5000);
             
-            // Still try to show AI tips if available
-            const tipsSection = document.getElementById('tipsSection');
-            const tipsMessage = document.getElementById('tipsMessage');
-            if (tipsSection && tipsMessage) {
-                tipsMessage.textContent = 'Could not get AI tip right now. Please try again later.';
-                tipsSection.style.display = 'block';
+            // Still try to show AI tips if available and not a limit error
+            if (!isLimitError) {
+                const tipsSection = document.getElementById('tipsSection');
+                const tipsMessage = document.getElementById('tipsMessage');
+                if (tipsSection && tipsMessage) {
+                    tipsMessage.textContent = 'Could not get AI tip right now. Please try again later.';
+                    tipsSection.style.display = 'block';
+                }
             }
         })
         .finally(() => {
-            btnCalculate.disabled = false;
-            btnCalculate.innerHTML = original;
+            // Only re-enable button if limit not reached
+            const isLimitReached = btnCalculate.innerHTML.includes('Daily Limit Reached');
+            if (!isLimitReached) {
+                btnCalculate.disabled = false;
+                btnCalculate.innerHTML = original;
+            }
         });
     });
+
+    // Helper function to update daily limit display
+    function updateDailyLimitDisplay(dailyCount, remaining) {
+        const limitContainer = document.querySelector('.daily-limit-container');
+        if (limitContainer) {
+            const alertDiv = limitContainer.querySelector('.alert');
+            if (remaining > 0) {
+                alertDiv.className = 'alert alert-info text-center';
+                alertDiv.innerHTML = `<strong>📊 Daily Calculations:</strong> ${dailyCount}/3 used today. 
+                    <span class="text-green-600">${remaining} calculations remaining</span>`;
+            } else {
+                alertDiv.className = 'alert alert-warning text-center';
+                alertDiv.innerHTML = `<strong>⚠️ Daily Limit Reached:</strong> You've used all 3 calculations for today (${dailyCount}/3). 
+                    <span class="text-orange-600">Please try again tomorrow!</span>`;
+            }
+        }
+
+        // Update button text
+        const button = document.getElementById('btnCalculate');
+        if (button && !button.disabled) {
+            const buttonText = remaining > 0 
+                ? `<span class="btn-icon">📊</span>Calculate Carbon Footprint (${remaining} left today)`
+                : `<span class="btn-icon">🚫</span>Daily Limit Reached (3/3 used)`;
+            button.innerHTML = buttonText;
+            
+            if (remaining === 0) {
+                button.disabled = true;
+            }
+        }
+    }
 });
 </script>
 
@@ -1000,6 +1076,24 @@ document.addEventListener('DOMContentLoaded', function() {
     flex: 1;
 }
 
+/* Daily limit indicator styles */
+.daily-limit-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.alert-info {
+    background-color: #e1f5fe;
+    border-color: #22c55e;
+    color: #0d4f3c;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
 /* Alert messages */
 .alert {
     padding: 12px 16px;
@@ -1020,6 +1114,19 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #f8d7da;
     border-color: #f5c6cb;
     color: #721c24;
+}
+
+/* Disabled button styles */
+.btn-calculate:disabled {
+    background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    transform: none !important;
+}
+
+.btn-calculate:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 @keyframes slideIn {

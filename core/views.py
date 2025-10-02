@@ -70,31 +70,59 @@ def track(request):
     View to create a new CarbonFootprint entry. Uses CarbonFootprintForm.
     Named 'track' because your template links to {% url 'track' %}.
     """
+    # Check daily calculation limit
+    can_calculate = CarbonFootprint.can_calculate_today(request.user)
+    remaining_calculations = CarbonFootprint.get_remaining_calculations(request.user)
+    daily_count = CarbonFootprint.get_daily_calculation_count(request.user)
+    
     if request.method == 'POST':
+        # Check if user has exceeded daily limit
+        if not can_calculate:
+            error_message = f"Daily calculation limit reached! You can only make 3 calculations per day. You've already made {daily_count} calculations today. Please try again tomorrow."
+            
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message,
+                    'limit_reached': True,
+                    'daily_count': daily_count,
+                    'remaining': 0
+                }, status=429)  # 429 Too Many Requests
+            else:
+                messages.error(request, error_message)
+                return redirect('track')
+        
         form = CarbonFootprintForm(request.POST)
         if form.is_valid():
             footprint = form.save(commit=False)
             footprint.user = request.user
-            # If your model needs a computed total_emission, either compute here
-            # or ensure model.save() handles it.
             footprint.save()
+            
+            # Update counts after saving
+            new_daily_count = CarbonFootprint.get_daily_calculation_count(request.user)
+            new_remaining = CarbonFootprint.get_remaining_calculations(request.user)
             
             # Check if this is an AJAX request
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
                 return JsonResponse({
                     'success': True,
-                    'message': 'Carbon footprint entry saved successfully.',
-                    'total_emission': footprint.total_emission
+                    'message': f'Carbon footprint entry saved successfully! You have {new_remaining} calculations remaining today.',
+                    'total_emission': footprint.total_emission,
+                    'daily_count': new_daily_count,
+                    'remaining': new_remaining
                 })
             else:
-                messages.success(request, 'Carbon footprint entry saved.')
+                messages.success(request, f'Carbon footprint entry saved! You have {new_remaining} calculations remaining today.')
                 return redirect('dashboard')
         else:
             # Check if this is an AJAX request
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
                 return JsonResponse({
                     'success': False,
-                    'errors': form.errors
+                    'errors': form.errors,
+                    'daily_count': daily_count,
+                    'remaining': remaining_calculations
                 }, status=400)
             else:
                 # expose form errors
@@ -103,7 +131,14 @@ def track(request):
                         messages.error(request, f"{field}: {error}")
     else:
         form = CarbonFootprintForm()
-    return render(request, 'track.html', {'form': form})
+    
+    context = {
+        'form': form,
+        'can_calculate': can_calculate,
+        'remaining_calculations': remaining_calculations,
+        'daily_count': daily_count,
+    }
+    return render(request, 'track.html', context)
 
 @login_required
 def dashboard(request):

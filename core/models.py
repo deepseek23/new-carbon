@@ -126,9 +126,29 @@ class CarbonFootprint(models.Model):
             'total': round(car_emission + flight_emission + public_emission + food_emission + electricity_emission + waste_emission, 2)
         }
 
-    def save(self, *args, **kwargs):
-        self.total_emission = self.calculate_emission()
-        super().save(*args, **kwargs)
+    @classmethod
+    def get_daily_calculation_count(cls, user, date=None):
+        """Get the number of calculations a user has made today"""
+        from django.utils import timezone
+        if date is None:
+            date = timezone.now().date()
+        
+        return cls.objects.filter(
+            user=user,
+            created_at__date=date
+        ).count()
+    
+    @classmethod
+    def can_calculate_today(cls, user, date=None):
+        """Check if user can make another calculation today (limit: 3 per day)"""
+        daily_count = cls.get_daily_calculation_count(user, date)
+        return daily_count < 3
+    
+    @classmethod
+    def get_remaining_calculations(cls, user, date=None):
+        """Get remaining calculations for today"""
+        daily_count = cls.get_daily_calculation_count(user, date)
+        return max(0, 3 - daily_count)
 
     def __str__(self):
         return f"{self.user.username} - {self.created_at.date()} - {self.total_emission} kg CO₂"
