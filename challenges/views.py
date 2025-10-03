@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from .models import ChallengeType, UserChallenge, ChallengeProgress
 import json
-
+@login_required
 def index(request):
     """Display all available challenges"""
     # Get all active challenge types

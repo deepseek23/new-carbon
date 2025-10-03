@@ -29,6 +29,41 @@
       box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
       transform: translateY(-2px);
     }
+    
+    /* Mobile Sidebar Styles */
+    .mobile-sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-sidebar.open {
+      transform: translateX(0);
+    }
+    .sidebar-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .sidebar-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .hamburger-line {
+      width: 25px;
+      height: 3px;
+      background-color: #374151;
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+    .hamburger.open .hamburger-line:nth-child(1) {
+      transform: rotate(45deg) translateY(8px);
+    }
+    .hamburger.open .hamburger-line:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.open .hamburger-line:nth-child(3) {
+      transform: rotate(-45deg) translateY(-8px);
+    }
+    
     footer {
       border-top: 1px solid rgba(0,0,0,0.08);
       margin-top: 3rem;
@@ -52,36 +87,148 @@
 
   <!-- Header -->
   <header class="bg-white shadow-sm fixed top-0 w-full z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-    <!-- Logo -->
-    <a href="{% url 'landing' %}" class="text-2xl font-bold text-green-500 flex items-center gap-2">
-      <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-10 h-10 object-cover rounded">
-      <h1>Carbon-footprint-tracker</h1>
-    </a>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="{% url 'landing' %}" class="text-xl sm:text-2xl font-bold text-green-500 flex items-center gap-2">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded">
+        <h1 class="hidden sm:block">Carbon-footprint-tracker</h1>
+        <h1 class="sm:hidden">Carbon</h1>
+      </a>
 
-    <!-- Navigation -->
-    <nav class="hidden md:flex space-x-8 text-gray-700 font-medium">
-      <a href="{% url 'landing' %}" class="hover:text-green-500 transition">Home</a>
-      <a href="{% url 'track' %}" class="hover:text-green-500 transition">Track</a>
-      <a href="{% url 'dashboard' %}" class="hover:text-green-500 transition">Dashboard</a>
-      <a href="{% url 'leaderboard' %}" class="hover:text-green-500 transition">Leaderboard</a>
-      <a href="{% url 'challenges:index' %}" class="hover:text-green-500 transition">Challenges</a>
-    </nav>
+      <!-- Desktop Navigation -->
+      <nav class="hidden lg:flex space-x-8 text-gray-700 font-medium">
+        <a href="{% url 'landing' %}" class="hover:text-green-500 transition-colors duration-200">Home</a>
+        <a href="{% url 'track' %}" class="hover:text-green-500 transition-colors duration-200">Track</a>
+        <a href="{% url 'dashboard' %}" class="hover:text-green-500 transition-colors duration-200">Dashboard</a>
+        <a href="{% url 'leaderboard' %}" class="hover:text-green-500 transition-colors duration-200">Leaderboard</a>
+        <a href="{% url 'challenges:index' %}" class="hover:text-green-500 transition-colors duration-200">Challenges</a>
+      </nav>
 
-    <!-- CTA Button -->
-    <div class="flex items-center gap-3">
-      {% if user.is_authenticated %}
-        <form action="{% url 'logout' %}" method="post">
-          {% csrf_token %}
-          <button type="submit" class="px-5 py-2 rounded-lg bg-black text-white hover:bg-green-500 transition">Logout</button>
-        </form>
-      {% else %}
-        <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg text-gray-700 hover:text-green-500 transition">Login</a>
-        <a href="{% url 'register' %}" class="px-5 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition">Register</a>
-      {% endif %}
+      <!-- Desktop Auth Buttons -->
+      <div class="hidden lg:flex items-center gap-3">
+        {% if user.is_authenticated %}
+          <span class="text-gray-600 text-sm">Hi, {{ user.get_username|default:'User' }}</span>
+          <form action="{% url 'logout' %}" method="post" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="px-4 py-2 rounded-lg bg-gray-800 text-white hover:bg-green-500 transition-colors duration-200">
+              Logout
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="px-4 py-2 rounded-lg text-gray-700 hover:text-green-500 transition-colors duration-200">Login</a>
+          <a href="{% url 'register' %}" class="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors duration-200">Register</a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile Hamburger Menu -->
+      <button id="mobile-menu-btn" class="lg:hidden flex flex-col gap-1 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"></div>
+
+  <!-- Mobile Sidebar -->
+  <div id="mobile-sidebar" class="mobile-sidebar fixed top-0 left-0 w-80 h-full bg-white shadow-xl z-50 lg:hidden">
+    <div class="flex flex-col h-full">
+      <!-- Sidebar Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+          <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-8 h-8 object-cover rounded">
+          <span class="text-lg font-bold text-green-500">Carbon Tracker</span>
+        </div>
+        <button id="close-sidebar" class="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Navigation -->
+      <nav class="flex-1 px-6 py-4">
+        {% if user.is_authenticated %}
+          <!-- User Info -->
+          <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">
+                {{ user.get_username|default:'U'|first|upper }}
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900">{{ user.get_username|default:'User' }}</p>
+                <p class="text-sm text-gray-600">Welcome back!</p>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Navigation Links -->
+        <div class="space-y-2">
+          <a href="{% url 'landing' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="font-medium">Home</span>
+          </a>
+          
+          <a href="{% url 'track' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span class="font-medium">Track Emissions</span>
+          </a>
+          
+          <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span class="font-medium">Dashboard</span>
+          </a>
+          
+          <a href="{% url 'leaderboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+            <span class="font-medium">Leaderboard</span>
+          </a>
+          
+          <a href="{% url 'challenges:index' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+            </svg>
+            <span class="font-medium">Challenges</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="p-6 border-t border-gray-200">
+        {% if user.is_authenticated %}
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-green-500 transition-colors duration-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              <span class="font-medium">Logout</span>
+            </button>
+          </form>
+        {% else %}
+          <div class="space-y-2">
+            <a href="{% url 'login' %}" class="w-full flex items-center justify-center px-4 py-3 border border-green-500 text-green-500 rounded-lg hover:bg-green-50 transition-colors duration-200">
+              Login
+            </a>
+            <a href="{% url 'register' %}" class="w-full flex items-center justify-center px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200">
+              Register
+            </a>
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
-</header>
 
   <!-- Main Content -->
   <main class="pt-20">
@@ -98,12 +245,59 @@
     </div>
   </footer>
 
-  <!-- Scroll Script -->
+  <!-- Mobile Menu & Scroll Script -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Header scroll effect
       var headerEl = document.querySelector('header');
       window.addEventListener('scroll', function() {
         headerEl.classList.toggle('scrolled', window.scrollY > 10);
+      });
+
+      // Mobile menu functionality
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileSidebar = document.getElementById('mobile-sidebar');
+      const sidebarOverlay = document.getElementById('sidebar-overlay');
+      const closeSidebar = document.getElementById('close-sidebar');
+      const hamburger = mobileMenuBtn;
+
+      function openSidebar() {
+        mobileSidebar.classList.add('open');
+        sidebarOverlay.classList.add('open');
+        hamburger.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebarMenu() {
+        mobileSidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+        hamburger.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      // Event listeners
+      mobileMenuBtn.addEventListener('click', function() {
+        if (mobileSidebar.classList.contains('open')) {
+          closeSidebarMenu();
+        } else {
+          openSidebar();
+        }
+      });
+
+      closeSidebar.addEventListener('click', closeSidebarMenu);
+      sidebarOverlay.addEventListener('click', closeSidebarMenu);
+
+      // Close sidebar when clicking on navigation links
+      const sidebarLinks = document.querySelectorAll('#mobile-sidebar a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', closeSidebarMenu);
+      });
+
+      // Close sidebar on window resize if screen becomes large
+      window.addEventListener('resize', function() {
+        if (window.innerWidth >= 1024) {
+          closeSidebarMenu();
+        }
       });
     });
   </script>

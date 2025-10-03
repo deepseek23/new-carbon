@@ -54,7 +54,7 @@ def register(request):
             user.save()
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to Carbon Tracker.')
-            return redirect('track')
+            return redirect('login')
         else:
             # Show form errors via messages so user sees them on the page
             for field, errors in form.errors.items():
@@ -141,7 +141,6 @@ def track(request):
     }
     return render(request, 'track.html', context)
 
-@login_required
 @login_required
 def dashboard(request):
     # Get time period from request (default to 'monthly')
@@ -244,7 +243,7 @@ def dashboard(request):
     }
     return render(request, "dashboard.html", context)
 
-@login_required
+
 @login_required
 def leaderboard(request):
     """Enhanced leaderboard of users by their emissions across different time periods."""

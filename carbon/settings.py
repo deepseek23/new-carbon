@@ -34,7 +34,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.0.101', 'testserver']
 
 
 
